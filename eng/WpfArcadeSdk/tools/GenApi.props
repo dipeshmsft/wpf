@@ -5,6 +5,7 @@
       PresentationCore;
       PresentationFramework;
       PresentationFramework.Aero;
+      PresentationFramework.Win11;
       PresentationFramework.Aero2;
       PresentationFramework.AeroLite;
       PresentationFramework.Classic;

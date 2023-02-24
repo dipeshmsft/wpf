@@ -23,6 +23,7 @@
       System.Windows.Controls.Ribbon;
       System.Windows.Presentation;
       PresentationFramework.Aero;
+      PresentationFramework.Win11;
       PresentationFramework.Aero2;
       PresentationFramework.AeroLite;
       PresentationFramework.Classic;
@@ -93,6 +94,7 @@
       UIAutomationTypes-ref;
       WindowsBase-ref;
       PresentationFramework.Aero-ref;
+      PresentationFramework.Win11-ref;
       PresentationFramework.Aero2-ref;
       PresentationFramework.AeroLite-ref;
       PresentationFramework.Classic-ref;
@@ -130,6 +132,8 @@
       PresentationFramework.Aero2-ref;
       PresentationFramework.AeroLite;
       PresentationFramework.AeroLite-ref;
+      PresentationFramework.Win11;
+      PresentationFramework.Win11-ref;
       PresentationFramework.Classic;
       PresentationFramework.Classic-ref;
       PresentationFramework.Luna;

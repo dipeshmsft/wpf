@@ -113,6 +113,8 @@ The following assemblies are being produced today:
     |   PresentationFramework.Aero2.pdb
     |   PresentationFramework.AeroLite.dll
     |   PresentationFramework.AeroLite.pdb
+    |   PresentationFramework.Win11.dll
+    |   PresentationFramework.Win11.pdb
     |   PresentationFramework.Classic.dll
     |   PresentationFramework.Classic.pdb
     |   PresentationFramework.dll
@@ -442,6 +444,8 @@ src\System.Xaml\ref\System.Xaml-ref.csproj
 src\Themes\Generator\ThemeGenerator.nativeproj
 src\Themes\PresentationFramework.Aero\PresentationFramework.Aero.csproj
 src\Themes\PresentationFramework.Aero\ref\PresentationFramework.Aero-ref.csproj
+src\Themes\PresentationFramework.Win11\PresentationFramework.Win11.csproj
+src\Themes\PresentationFramework.Win11\ref\PresentationFramework.Win11-ref.csproj
 src\Themes\PresentationFramework.Aero2\PresentationFramework.Aero2.csproj
 src\Themes\PresentationFramework.Aero2\ref\PresentationFramework.Aero2-ref.csproj
 src\Themes\PresentationFramework.AeroLite\PresentationFramework.AeroLite.csproj
