@@ -7347,7 +7347,7 @@ To automatically copy the files, set the environment variable
         <Setter Property="FontFamily"
                 Value="Times New Roman"/>
         <Setter Property="PasswordChar"
-                Value="●"/>
+                Value="$"/>
         <Setter Property="Foreground"
                 Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
         <Setter Property="KeyboardNavigation.TabNavigation"
@@ -7921,6 +7921,8 @@ TODO:
             </Trigger>
         </Style.Triggers>
     </Style>
+
+
 
     <JournalEntryListConverter x:Key="&#200;"/>
 
