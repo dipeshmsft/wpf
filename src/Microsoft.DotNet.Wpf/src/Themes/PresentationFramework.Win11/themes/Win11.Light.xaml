@@ -70,7 +70,7 @@ To automatically copy the files, set the environment variable
         <Setter Property="BorderBrush"
                 Value="{StaticResource &#201;}"/>
         <Setter Property="BorderThickness"
-                Value="5"/>
+                Value="1"/>
         <Setter Property="Padding"
                 Value="1"/>
         <Setter Property="AllowDrop"
@@ -178,7 +178,7 @@ To automatically copy the files, set the environment variable
         <Setter Property="FontFamily"
                 Value="Times New Roman"/>
         <Setter Property="PasswordChar"
-                Value="$"/>
+                Value="●"/>
         <Setter Property="Foreground"
                 Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
         <Setter Property="KeyboardNavigation.TabNavigation"
@@ -241,7 +241,9 @@ To automatically copy the files, set the environment variable
                 <Setter Property="SelectionTextBrush" Value="{DynamicResource {x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}}" />
             </MultiTrigger>
         </Style.Triggers>
-    </Style> <!--=================================================================
+    </Style> 
+    
+    <!--=================================================================
         ToolTip
     ==================================================================-->
     <LinearGradientBrush x:Key="&#202;"
