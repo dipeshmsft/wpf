@@ -26,17 +26,17 @@ namespace System.Xaml
 
     public class AmbientPropertyValue
     {
-        XamlMember _property;
+        XamlMember? _property;
         object? _value;
 
-        public AmbientPropertyValue(XamlMember property, object? value)
+        public AmbientPropertyValue(XamlMember? property, object? value)
         {
             _property = property;
             _value = value;
         }
 
         public object? Value { get { return _value; } }
-        public XamlMember RetrievedProperty { get { return _property; }  }
+        public XamlMember? RetrievedProperty { get { return _property; }  }
     }
 }
 #nullable disable

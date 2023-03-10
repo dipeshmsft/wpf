@@ -320,8 +320,9 @@ namespace MS.Internal.Xaml.Context
                 }
             }
 
+#nullable disable
             List<XamlType> ceilingTypes = ceilingTypesEnumerable != null ? new List<XamlType>(ceilingTypesEnumerable) : null;
-
+#nullable enable
             List<AmbientPropertyValue> retList = new List<AmbientPropertyValue>();
 
             // Start the search for ambient properties and types starting with the parent frame.
@@ -356,8 +357,12 @@ namespace MS.Internal.Xaml.Context
                 {
                     foreach (XamlMember prop in properties)
                     {
+                        #nullable disable
+
                         bool returnAmbientValue = false;
                         object value = null;
+
+                        #nullable enable
 
                         if (frame.XamlType != null && frame.XamlType.CanAssignTo(prop.DeclaringType))
                         {
