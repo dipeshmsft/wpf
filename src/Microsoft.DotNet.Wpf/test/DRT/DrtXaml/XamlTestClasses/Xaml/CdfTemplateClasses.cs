@@ -11,6 +11,7 @@ using System.Xaml;
 using MARKUP=System.Windows.Markup;
 using System.Xaml.Schema;
 
+#nullable enable
 namespace Cdf.Test.Elements
 {
     public class FakeBinding : MARKUP.MarkupExtension
@@ -726,3 +727,4 @@ namespace Cdf.Test.Elements
         }
     }
 }
+#nullable disable

@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 
+#nullable enable
 namespace System.Xaml
 {
     public interface IAmbientProvider
@@ -26,15 +27,16 @@ namespace System.Xaml
     public class AmbientPropertyValue
     {
         XamlMember _property;
-        object _value;
+        object? _value;
 
-        public AmbientPropertyValue(XamlMember property, object value)
+        public AmbientPropertyValue(XamlMember property, object? value)
         {
             _property = property;
             _value = value;
         }
 
-        public object Value { get { return _value; } }
+        public object? Value { get { return _value; } }
         public XamlMember RetrievedProperty { get { return _property; }  }
     }
 }
+#nullable disable

@@ -11,6 +11,7 @@ using System.Xaml;
 
 namespace Test.Elements
 {
+
     public class ColorElementConverter: TypeConverter
     {
         public override bool CanConvertFrom(ITypeDescriptorContext typeDescriptorContext, Type sourceType)
@@ -57,6 +58,8 @@ namespace Test.Elements
 
             IXamlSchemaContextProvider schemaContextProvider = (IXamlSchemaContextProvider)typeDescriptorContext.GetService(typeof(IXamlSchemaContextProvider));
             IAmbientProvider iAmbient = (IAmbientProvider)typeDescriptorContext.GetService(typeof(IAmbientProvider));
+        
+            #nullable enable
 
             XamlType ambientLabel = schemaContextProvider.SchemaContext.GetXamlType(typeof(HasAmbientLabel));
             XamlMember label = ambientLabel.GetMember("Label");
@@ -67,9 +70,11 @@ namespace Test.Elements
             }
             else
             {
-                e.ColorName = color + "-" + apVal.Value.ToString();
+                e.ColorName = color + "-" + apVal.Value?.ToString();
             }
             return e;
+            #nullable disable
+       
         }
 
         public override object ConvertTo(ITypeDescriptorContext typeDescriptorContext, CultureInfo cultureInfo, object value, Type destinationType)
@@ -94,6 +99,7 @@ namespace Test.Elements
             return (destinationType == typeof(string));
         }
 
+        #nullable enable
         public override object ConvertFrom(ITypeDescriptorContext typeDescriptorContext, CultureInfo cultureInfo, object value)
         {
             String s = value as string;
@@ -121,6 +127,7 @@ namespace Test.Elements
             }
             return e;
         }
+        #nullable disable
 
         public override object ConvertTo(ITypeDescriptorContext typeDescriptorContext, CultureInfo cultureInfo, object value, Type destinationType)
         {

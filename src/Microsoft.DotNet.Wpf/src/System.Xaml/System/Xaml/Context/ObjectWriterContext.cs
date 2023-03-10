@@ -304,6 +304,8 @@ namespace MS.Internal.Xaml.Context
             return frame.Member.Type;
         }
 
+        #nullable enable
+
         private List<AmbientPropertyValue> FindAmbientValues(IEnumerable<XamlType> ceilingTypesEnumerable,
                                                              bool searchLiveStackOnly,
                                                              IEnumerable<XamlType> types,
@@ -467,7 +469,7 @@ namespace MS.Internal.Xaml.Context
         }
 
         // ----- new public methods.
-
+        #nullable disable
         public void PushScope()
         {
             _stack.PushScope();

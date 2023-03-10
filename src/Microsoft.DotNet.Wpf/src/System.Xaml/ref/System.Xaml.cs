@@ -331,12 +331,14 @@ namespace System.Windows.Markup
 }
 namespace System.Xaml
 {
+    #nullable enable
     public partial class AmbientPropertyValue
     {
-        public AmbientPropertyValue(System.Xaml.XamlMember property, object value) { }
+        public AmbientPropertyValue(System.Xaml.XamlMember property, object? value) { }
         public System.Xaml.XamlMember RetrievedProperty { get { throw null; } }
-        public object Value { get { throw null; } }
+        public object? Value { get { throw null; } }
     }
+    #nullable disable
     public partial class AttachableMemberIdentifier : System.IEquatable<System.Xaml.AttachableMemberIdentifier>
     {
         public AttachableMemberIdentifier(System.Type declaringType, string memberName) { }
