@@ -10,16 +10,14 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Windows.Threading;
+using System.Windows;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
-using System.Windows;
-using System.Windows.Media;
-using System.Windows.Markup;
 using System.Windows.Input;
-using System.Windows.Automation.Peers;
-
-using MS.Utility;
+using System.Windows.Markup;
+using System.Windows.Media;
+using System.Windows.Threading;
 using MS.Internal;
 using MS.Internal.Controls;
 using MS.Internal.Data;
@@ -27,6 +25,7 @@ using MS.Internal.Hashing.PresentationFramework;    // HashHelper
 using MS.Internal.KnownBoxes;
 using MS.Internal.PresentationFramework;
 using MS.Internal.Utility;
+using MS.Utility;
 
 namespace System.Windows.Controls
 {
@@ -103,7 +102,7 @@ namespace System.Windows.Controls
             {
                 ShouldCoerceCacheSizeField.SetValue(d, false);
                 BaseValueSource baseValueSource = DependencyPropertyHelper.GetValueSource(d, VirtualizingStackPanel.CacheLengthUnitProperty).BaseValueSource;
-                if ( !((ItemsControl)d).IsGrouping && !(d is TreeView) && baseValueSource == BaseValueSource.Default )
+                if (!((ItemsControl)d).IsGrouping && !(d is TreeView) && baseValueSource == BaseValueSource.Default)
                 {
                     return VirtualizationCacheLengthUnit.Item;
                 }
@@ -189,7 +188,7 @@ namespace System.Windows.Controls
 
         private static void OnItemsSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            ItemsControl ic = (ItemsControl) d;
+            ItemsControl ic = (ItemsControl)d;
             IEnumerable oldValue = (IEnumerable)e.OldValue;
             IEnumerable newValue = (IEnumerable)e.NewValue;
 
@@ -201,7 +200,7 @@ namespace System.Windows.Controls
                 // ItemsSource is data-bound.   Always go to ItemsSource mode.
                 // Also, extract the source item, to supply as context to the
                 // CollectionRegistering event
-                ic.Items.SetItemsSource(newValue, (object x)=>beb.GetSourceItem(x) );
+                ic.Items.SetItemsSource(newValue, (object x) => beb.GetSourceItem(x));
             }
             else if (e.NewValue != null)
             {
@@ -357,7 +356,7 @@ namespace System.Windows.Controls
         [Bindable(false), Browsable(false)]
         public bool HasItems
         {
-            get { return (bool) GetValue(HasItemsProperty); }
+            get { return (bool)GetValue(HasItemsProperty); }
         }
 
         /// <summary>
@@ -382,7 +381,7 @@ namespace System.Windows.Controls
         [Bindable(true), CustomCategory("Content")]
         public string DisplayMemberPath
         {
-            get { return (string) GetValue(DisplayMemberPathProperty); }
+            get { return (string)GetValue(DisplayMemberPathProperty); }
             set { SetValue(DisplayMemberPathProperty, value); }
         }
 
@@ -391,7 +390,7 @@ namespace System.Windows.Controls
         /// </summary>
         private static void OnDisplayMemberPathChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            ItemsControl ctrl = (ItemsControl) d;
+            ItemsControl ctrl = (ItemsControl)d;
 
             ctrl.OnDisplayMemberPathChanged((string)e.OldValue, (string)e.NewValue);
             ctrl.UpdateDisplayMemberTemplateSelector();
@@ -458,7 +457,7 @@ namespace System.Windows.Controls
                         typeof(DataTemplate),
                         typeof(ItemsControl),
                         new FrameworkPropertyMetadata(
-                                (DataTemplate) null,
+                                (DataTemplate)null,
                                 new PropertyChangedCallback(OnItemTemplateChanged)));
 
         /// <summary>
@@ -467,7 +466,7 @@ namespace System.Windows.Controls
         [Bindable(true), CustomCategory("Content")]
         public DataTemplate ItemTemplate
         {
-            get { return (DataTemplate) GetValue(ItemTemplateProperty); }
+            get { return (DataTemplate)GetValue(ItemTemplateProperty); }
             set { SetValue(ItemTemplateProperty, value); }
         }
 
@@ -478,7 +477,7 @@ namespace System.Windows.Controls
         /// <param name="e">EventArgs that contains the old and new values for this property</param>
         private static void OnItemTemplateChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            ((ItemsControl) d).OnItemTemplateChanged((DataTemplate) e.OldValue, (DataTemplate) e.NewValue);
+            ((ItemsControl)d).OnItemTemplateChanged((DataTemplate)e.OldValue, (DataTemplate)e.NewValue);
         }
 
         /// <summary>
@@ -509,7 +508,7 @@ namespace System.Windows.Controls
                         typeof(DataTemplateSelector),
                         typeof(ItemsControl),
                         new FrameworkPropertyMetadata(
-                                (DataTemplateSelector) null,
+                                (DataTemplateSelector)null,
                                 new PropertyChangedCallback(OnItemTemplateSelectorChanged)));
 
         /// <summary>
@@ -523,7 +522,7 @@ namespace System.Windows.Controls
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public DataTemplateSelector ItemTemplateSelector
         {
-            get { return (DataTemplateSelector) GetValue(ItemTemplateSelectorProperty); }
+            get { return (DataTemplateSelector)GetValue(ItemTemplateSelectorProperty); }
             set { SetValue(ItemTemplateSelectorProperty, value); }
         }
 
@@ -534,7 +533,7 @@ namespace System.Windows.Controls
         /// <param name="e">EventArgs that contains the old and new values for this property</param>
         private static void OnItemTemplateSelectorChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            ((ItemsControl)d).OnItemTemplateSelectorChanged((DataTemplateSelector) e.OldValue, (DataTemplateSelector) e.NewValue);
+            ((ItemsControl)d).OnItemTemplateSelectorChanged((DataTemplateSelector)e.OldValue, (DataTemplateSelector)e.NewValue);
         }
 
         /// <summary>
@@ -564,7 +563,7 @@ namespace System.Windows.Controls
                         typeof(String),
                         typeof(ItemsControl),
                         new FrameworkPropertyMetadata(
-                                (String) null,
+                                (String)null,
                               new PropertyChangedCallback(OnItemStringFormatChanged)));
 
 
@@ -576,7 +575,7 @@ namespace System.Windows.Controls
         [Bindable(true), CustomCategory("Content")]
         public String ItemStringFormat
         {
-            get { return (String) GetValue(ItemStringFormatProperty); }
+            get { return (String)GetValue(ItemStringFormatProperty); }
             set { SetValue(ItemStringFormatProperty, value); }
         }
 
@@ -587,7 +586,7 @@ namespace System.Windows.Controls
         {
             ItemsControl ctrl = (ItemsControl)d;
 
-            ctrl.OnItemStringFormatChanged((String) e.OldValue, (String) e.NewValue);
+            ctrl.OnItemStringFormatChanged((String)e.OldValue, (String)e.NewValue);
             ctrl.UpdateDisplayMemberTemplateSelector();
         }
 
@@ -613,7 +612,7 @@ namespace System.Windows.Controls
                         typeof(BindingGroup),
                         typeof(ItemsControl),
                         new FrameworkPropertyMetadata(
-                                (BindingGroup) null,
+                                (BindingGroup)null,
                               new PropertyChangedCallback(OnItemBindingGroupChanged)));
 
 
@@ -626,7 +625,7 @@ namespace System.Windows.Controls
         [Bindable(true), CustomCategory("Content")]
         public BindingGroup ItemBindingGroup
         {
-            get { return (BindingGroup) GetValue(ItemBindingGroupProperty); }
+            get { return (BindingGroup)GetValue(ItemBindingGroupProperty); }
             set { SetValue(ItemBindingGroupProperty, value); }
         }
 
@@ -637,7 +636,7 @@ namespace System.Windows.Controls
         {
             ItemsControl ctrl = (ItemsControl)d;
 
-            ctrl.OnItemBindingGroupChanged((BindingGroup) e.OldValue, (BindingGroup) e.NewValue);
+            ctrl.OnItemBindingGroupChanged((BindingGroup)e.OldValue, (BindingGroup)e.NewValue);
         }
 
         /// <summary>
@@ -685,7 +684,7 @@ namespace System.Windows.Controls
                         typeof(Style),
                         typeof(ItemsControl),
                         new FrameworkPropertyMetadata(
-                                (Style) null,
+                                (Style)null,
                                 new PropertyChangedCallback(OnItemContainerStyleChanged)));
 
         /// <summary>
@@ -695,7 +694,7 @@ namespace System.Windows.Controls
         [Bindable(true), Category("Content")]
         public Style ItemContainerStyle
         {
-            get { return (Style) GetValue(ItemContainerStyleProperty); }
+            get { return (Style)GetValue(ItemContainerStyleProperty); }
             set { SetValue(ItemContainerStyleProperty, value); }
         }
 
@@ -706,7 +705,7 @@ namespace System.Windows.Controls
         /// <param name="e">EventArgs that contains the old and new values for this property</param>
         private static void OnItemContainerStyleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            ((ItemsControl) d).OnItemContainerStyleChanged((Style) e.OldValue, (Style) e.NewValue);
+            ((ItemsControl)d).OnItemContainerStyleChanged((Style)e.OldValue, (Style)e.NewValue);
         }
 
         /// <summary>
@@ -737,7 +736,7 @@ namespace System.Windows.Controls
                         typeof(StyleSelector),
                         typeof(ItemsControl),
                         new FrameworkPropertyMetadata(
-                                (StyleSelector) null,
+                                (StyleSelector)null,
                                 new PropertyChangedCallback(OnItemContainerStyleSelectorChanged)));
 
         /// <summary>
@@ -751,7 +750,7 @@ namespace System.Windows.Controls
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public StyleSelector ItemContainerStyleSelector
         {
-            get { return (StyleSelector) GetValue(ItemContainerStyleSelectorProperty); }
+            get { return (StyleSelector)GetValue(ItemContainerStyleSelectorProperty); }
             set { SetValue(ItemContainerStyleSelectorProperty, value); }
         }
 
@@ -762,7 +761,7 @@ namespace System.Windows.Controls
         /// <param name="e">EventArgs that contains the old and new values for this property</param>
         private static void OnItemContainerStyleSelectorChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            ((ItemsControl) d).OnItemContainerStyleSelectorChanged((StyleSelector) e.OldValue, (StyleSelector) e.NewValue);
+            ((ItemsControl)d).OnItemContainerStyleSelectorChanged((StyleSelector)e.OldValue, (StyleSelector)e.NewValue);
         }
 
         /// <summary>
@@ -879,7 +878,7 @@ namespace System.Windows.Controls
         [Bindable(false)]
         public ItemsPanelTemplate ItemsPanel
         {
-            get { return (ItemsPanelTemplate) GetValue(ItemsPanelProperty); }
+            get { return (ItemsPanelTemplate)GetValue(ItemsPanelProperty); }
             set { SetValue(ItemsPanelProperty, value); }
         }
 
@@ -890,7 +889,7 @@ namespace System.Windows.Controls
         /// <param name="e">EventArgs that contains the old and new values for this property</param>
         private static void OnItemsPanelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            ((ItemsControl) d).OnItemsPanelChanged((ItemsPanelTemplate) e.OldValue, (ItemsPanelTemplate) e.NewValue);
+            ((ItemsControl)d).OnItemsPanelChanged((ItemsPanelTemplate)e.OldValue, (ItemsPanelTemplate)e.NewValue);
         }
 
         /// <summary>
@@ -991,7 +990,7 @@ namespace System.Windows.Controls
         [Bindable(true), CustomCategory("Content")]
         public GroupStyleSelector GroupStyleSelector
         {
-            get { return (GroupStyleSelector) GetValue(GroupStyleSelectorProperty); }
+            get { return (GroupStyleSelector)GetValue(GroupStyleSelectorProperty); }
             set { SetValue(GroupStyleSelectorProperty, value); }
         }
 
@@ -1002,7 +1001,7 @@ namespace System.Windows.Controls
         /// <param name="e">EventArgs that contains the old and new values for this property</param>
         private static void OnGroupStyleSelectorChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            ((ItemsControl) d).OnGroupStyleSelectorChanged((GroupStyleSelector) e.OldValue, (GroupStyleSelector) e.NewValue);
+            ((ItemsControl)d).OnGroupStyleSelectorChanged((GroupStyleSelector)e.OldValue, (GroupStyleSelector)e.NewValue);
         }
 
         /// <summary>
@@ -1049,7 +1048,7 @@ namespace System.Windows.Controls
         [Bindable(true), CustomCategory("Content")]
         public int AlternationCount
         {
-            get { return (int) GetValue(AlternationCountProperty); }
+            get { return (int)GetValue(AlternationCountProperty); }
             set { SetValue(AlternationCountProperty, value); }
         }
 
@@ -1058,10 +1057,10 @@ namespace System.Windows.Controls
         /// </summary>
         private static void OnAlternationCountChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            ItemsControl ctrl = (ItemsControl) d;
+            ItemsControl ctrl = (ItemsControl)d;
 
-            int oldAlternationCount = (int) e.OldValue;
-            int newAlternationCount = (int) e.NewValue;
+            int oldAlternationCount = (int)e.OldValue;
+            int newAlternationCount = (int)e.NewValue;
 
             ctrl.OnAlternationCountChanged(oldAlternationCount, newAlternationCount);
         }
@@ -1133,7 +1132,7 @@ namespace System.Windows.Controls
         /// </summary>
         public bool IsTextSearchEnabled
         {
-            get { return (bool) GetValue(IsTextSearchEnabledProperty); }
+            get { return (bool)GetValue(IsTextSearchEnabledProperty); }
             set { SetValue(IsTextSearchEnabledProperty, BooleanBoxes.Box(value)); }
         }
 
@@ -1153,7 +1152,7 @@ namespace System.Windows.Controls
         /// </summary>
         public bool IsTextSearchCaseSensitive
         {
-            get { return (bool) GetValue(IsTextSearchCaseSensitiveProperty); }
+            get { return (bool)GetValue(IsTextSearchCaseSensitiveProperty); }
             set { SetValue(IsTextSearchCaseSensitiveProperty, BooleanBoxes.Box(value)); }
         }
 
@@ -1386,7 +1385,7 @@ namespace System.Windows.Controls
             {
                 BindingGroup itemBindingGroup = ItemBindingGroup;
                 BindingGroup containerBindingGroup =
-                    (itemBindingGroup != null)  ? new BindingGroup(itemBindingGroup)
+                    (itemBindingGroup != null) ? new BindingGroup(itemBindingGroup)
                                                 : null;
                 container.SetValue(FrameworkElement.BindingGroupProperty, containerBindingGroup);
             }
@@ -1842,7 +1841,16 @@ namespace System.Windows.Controls
                 // forward the request to the correct panel, of course.
                 if (!FrameworkCompatibilityPreferences.GetVSP45Compat())
                 {
+                    int timestamp = Items.Timestamp;
                     UpdateLayout();
+
+                    if (timestamp != Items.Timestamp)
+                    {
+                        // UpdateLayout changed the ItemsCollection, so info.Index may no longer be
+                        // valid.  If not, abandon the BringItemIntoView request.
+                        if (info.Index >= Items.Count || !EqualsEx(Items.GetItemAt(info.Index), info.Item))
+                            return null;
+                    }
                 }
 
                 VirtualizingPanel itemsHost = ItemsHost as VirtualizingPanel;
@@ -2415,7 +2423,7 @@ namespace System.Windows.Controls
                     if (firstElement != null &&
                         (firstItem == DependencyProperty.UnsetValue || firstItem is CollectionViewGroupInternal))
                     {
-                         return firstElement.Focus();
+                        return firstElement.Focus();
                     }
                     else
                     {
@@ -2545,7 +2553,7 @@ namespace System.Windows.Controls
             return null;
         }
 
-        internal void NavigateToItem(ItemInfo info, ItemNavigateArgs itemNavigateArgs, bool alwaysAtTopOfViewport=false)
+        internal void NavigateToItem(ItemInfo info, ItemNavigateArgs itemNavigateArgs, bool alwaysAtTopOfViewport = false)
         {
             if (info != null)
             {
@@ -3260,7 +3268,8 @@ namespace System.Windows.Controls
                 {
                     if (_empty == null)
                     {
-                        _empty = new ItemNavigateArgs(null, ModifierKeys.None);;
+                        _empty = new ItemNavigateArgs(null, ModifierKeys.None);
+                        ;
                     }
                     return _empty;
                 }
@@ -3276,7 +3285,7 @@ namespace System.Windows.Controls
 
             if (item != null)
             {
-                UIElement container =  info.Container as UIElement;
+                UIElement container = info.Container as UIElement;
                 if (container != null)
                 {
                     returnValue = container.Focus();
@@ -3579,7 +3588,7 @@ namespace System.Windows.Controls
         #region ItemInfo
 
         // create an ItemInfo with as much information as can be deduced
-        internal ItemInfo NewItemInfo(object item, DependencyObject container=null, int index=-1)
+        internal ItemInfo NewItemInfo(object item, DependencyObject container = null, int index = -1)
         {
             return new ItemInfo(item, container, index).Refresh(ItemContainerGenerator);
         }
@@ -3629,8 +3638,8 @@ namespace System.Windows.Controls
         {
             if (info != null)
             {
-                ItemInfo[] a = new ItemInfo[]{info};
-                AdjustItemInfosAfterGeneratorChange(a, claimUniqueContainer:false);
+                ItemInfo[] a = new ItemInfo[] { info };
+                AdjustItemInfosAfterGeneratorChange(a, claimUniqueContainer: false);
             }
         }
 
@@ -3715,7 +3724,7 @@ namespace System.Windows.Controls
         {
             if (info != null)
             {
-                ItemInfo[] a = new ItemInfo[]{info};
+                ItemInfo[] a = new ItemInfo[] { info };
                 AdjustItemInfos(e, a);
             }
         }
@@ -3735,7 +3744,7 @@ namespace System.Windows.Controls
                             info.Index = index + 1;
                         }
                     }
-                break;
+                    break;
 
                 case NotifyCollectionChangedAction.Remove:
                     // items at OldStartingIndex and above have moved down 1
@@ -3751,7 +3760,7 @@ namespace System.Windows.Controls
                             info.Index = -1;
                         }
                     }
-                break;
+                    break;
 
                 case NotifyCollectionChangedAction.Move:
                     // items between New and Old have moved.  The direction and
@@ -3782,11 +3791,11 @@ namespace System.Windows.Controls
                             info.Index = index + delta;
                         }
                     }
-                break;
+                    break;
 
                 case NotifyCollectionChangedAction.Replace:
                     // nothing to do
-                break;
+                    break;
 
                 case NotifyCollectionChangedAction.Reset:
                     // the indices and containers are no longer valid
@@ -3795,12 +3804,12 @@ namespace System.Windows.Controls
                         info.Index = -1;
                         info.Container = null;
                     }
-                break;
+                    break;
             }
         }
 
         // return an ItemInfo like the input one, but owned by this ItemsControl
-        internal ItemInfo LeaseItemInfo(ItemInfo info, bool ensureIndex=false)
+        internal ItemInfo LeaseItemInfo(ItemInfo info, bool ensureIndex = false)
         {
             // if the original has index data, it's already good enough
             if (info.Index < 0)
@@ -3847,7 +3856,7 @@ namespace System.Windows.Controls
                 RemovedContainer.MakeSentinel();
             }
 
-            public ItemInfo(object item, DependencyObject container=null, int index=-1)
+            public ItemInfo(object item, DependencyObject container = null, int index = -1)
             {
                 Item = item;
                 Container = container;
@@ -3884,7 +3893,7 @@ namespace System.Windows.Controls
                 if (that == null)
                     return false;
 
-                return Equals(that, matchUnresolved:false);
+                return Equals(that, matchUnresolved: false);
             }
 
             internal bool Equals(ItemInfo that, bool matchUnresolved)
@@ -3909,13 +3918,13 @@ namespace System.Windows.Controls
 
                 return
                     (this.Container == that.Container)
-                     ?  (this.Container == SentinelContainer)
-                         ?  (this.Index == that.Index)      // Sentinel => negative indices are significant
-                         :  (this.Index < 0 || that.Index < 0 ||
+                     ? (this.Container == SentinelContainer)
+                         ? (this.Index == that.Index)      // Sentinel => negative indices are significant
+                         : (this.Index < 0 || that.Index < 0 ||
                                 this.Index == that.Index)   // ~Sentinel => ignore negative indices
-                     :  (this.Container == SentinelContainer) ||    // sentinel matches non-sentinel
+                     : (this.Container == SentinelContainer) ||    // sentinel matches non-sentinel
                         (that.Container == SentinelContainer) ||
-                        (   (this.Container == null || that.Container == null) &&   // null matches non-null
+                        ((this.Container == null || that.Container == null) &&   // null matches non-null
                             (this.Index < 0 || that.Index < 0 ||                    // provided that indices match
                                 this.Index == that.Index));
             }
@@ -3985,7 +3994,7 @@ namespace System.Windows.Controls
 
         void IContainItemStorage.ClearValue(DependencyProperty dp)
         {
-            Helper.ClearItemValueStorage(this, new int[] {dp.GlobalIndex});
+            Helper.ClearItemValueStorage(this, new int[] { dp.GlobalIndex });
         }
 
         void IContainItemStorage.Clear()
