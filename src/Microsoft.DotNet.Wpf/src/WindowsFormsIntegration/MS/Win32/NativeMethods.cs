@@ -20,7 +20,11 @@ namespace MS.Win32
 
         public const int SWP_NOSIZE = 1;
         public const int SWP_NOMOVE = 2;
-
+        public const int SWP_SHOWWINDOW = 0x0040;
+        public const int SWP_HIDEWINDOW = 0x0080;
+        public const int GWL_STYLE = -16;
+        public const int WS_VISIBLE = 0x10000000;
+        
         public const int UIS_SET = 1;
         public const int UIS_INITIALIZE = 3;
         public const int UISF_HIDEFOCUS = 0x1;

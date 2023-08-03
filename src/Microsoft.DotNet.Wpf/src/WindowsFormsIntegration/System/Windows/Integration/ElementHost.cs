@@ -330,9 +330,27 @@ namespace System.Windows.Forms.Integration
         protected override void OnVisibleChanged(EventArgs e)
         {
             base.OnVisibleChanged(e);
+            HandleHwndVisibility();
             UpdateBackground();
         }
 
+        void HandleHwndVisibility()
+        {
+            if (this.HwndSource == null || this.HwndSource.Handle == IntPtr.Zero)
+                return;
+
+            int windowStyle = NativeMethodsSetLastError.GetWindowLong(this.HwndSource.Handle, NativeMethods.GWL_STYLE);
+            bool isAlreadyVisible = (windowStyle & NativeMethods.WS_VISIBLE) == NativeMethods.WS_VISIBLE;
+
+            if (Visible == isAlreadyVisible)
+                return;
+
+            int flags = NativeMethods.SWP_NOMOVE | NativeMethods.SWP_NOSIZE;
+            flags = flags | (Visible ? NativeMethods.SWP_SHOWWINDOW : NativeMethods.SWP_HIDEWINDOW);
+            SafeNativeMethods.SetWindowPos(this.HwndSource.Handle, NativeMethods.HWND_TOP, 0, 0,
+                                                this.Width, this.Height, flags);
+        }
+        
         void CallUpdateBackground(object sender, EventArgs e)
         {
             UpdateBackground();
