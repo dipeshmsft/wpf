@@ -470,21 +470,25 @@ namespace System.Windows
 
             DependencyObject d = (fe != null) ? (DependencyObject)fe : (DependencyObject)fce;
 
-            if (HasChildren(fe, fce))
+            // Disable processing of the queue to prevent unrelated reentrancy.
+            IDisposable idisposable = d.Dispatcher.DisableProcessing();
+
+            using(idisposable)
             {
-                // Spin up a DescendentsWalker only when
-                // the current node has children to walk
+                if (HasChildren(fe, fce))
+                {
+                    // Spin up a DescendentsWalker only when
+                    // the current node has children to walk
+                    DescendentsWalker<ResourcesChangeInfo> walker = new DescendentsWalker<ResourcesChangeInfo>(
+                        TreeWalkPriority.LogicalTree, ResourcesChangeDelegate, info);
 
-                DescendentsWalker<ResourcesChangeInfo> walker = new DescendentsWalker<ResourcesChangeInfo>(
-                    TreeWalkPriority.LogicalTree, ResourcesChangeDelegate, info);
-
-                walker.StartWalk(d);
-            }
-            else
-            {
-                // Degenerate case when the current node is a leaf node and has no children.
-
-                OnResourcesChanged(d, info, true);
+                    walker.StartWalk(d);
+                }
+                else
+                {
+                    // Degenerate case when the current node is a leaf node and has no children.
+                    OnResourcesChanged(d, info, true);
+                }
             }
         }
 
