@@ -46,8 +46,8 @@ namespace System.Windows.Automation.Peers
                 {
                     try
                     {
-                        StringBuilder sb = new StringBuilder(512);
-                        UnsafeNativeMethods.GetWindowText(new HandleRef(null, window.CriticalHandle), sb, sb.Capacity);
+                        StringBuilder sb = new StringBuilder();
+                        UnsafeNativeMethods.GetWindowText(new HandleRef(null, window.CriticalHandle), sb);
                         name = sb.ToString();
                     }
                     catch (Win32Exception)

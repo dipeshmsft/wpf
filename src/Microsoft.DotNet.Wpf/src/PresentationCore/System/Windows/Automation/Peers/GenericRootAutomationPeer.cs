@@ -51,11 +51,10 @@ namespace System.Windows.Automation.Peers
                 {
                     try
                     {
-                        StringBuilder sb = new StringBuilder(512);
+                        StringBuilder sb = new StringBuilder();
 
                         //This method elevates via SuppressUnmanadegCodeSecurity and throws Win32Exception on GetLastError
-                        UnsafeNativeMethods.GetWindowText(new HandleRef(null, hwnd), sb, sb.Capacity);
-
+                        UnsafeNativeMethods.GetWindowText(new HandleRef(null, hwnd), sb);
                         name = sb.ToString();
                     }
 // Allow empty catch statements.

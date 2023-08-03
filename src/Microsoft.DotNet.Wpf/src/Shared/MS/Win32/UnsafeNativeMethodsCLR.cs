@@ -481,32 +481,37 @@ namespace MS.Win32
 #endif
 
 
-        internal static int GetWindowText(HandleRef hWnd, [Out] StringBuilder lpString, int nMaxCount)
+        internal static int GetWindowText(HandleRef hWnd, [Out] StringBuilder lpString, int nMaxCount=0)
         {
-            int returnValue = NativeMethodsSetLastError.GetWindowText(hWnd, lpString, nMaxCount);
-            if (returnValue == 0)
+            int nLen = GetWindowTextLength(hWnd);
+
+            // If nLen == 0, this means that the window's title is empty. Hence, returning 0
+            if (nLen == 0)
             {
-                int win32Err = Marshal.GetLastWin32Error();
-                if (win32Err != 0)
-                {
-                    throw new Win32Exception(win32Err);
-                }
+                return 0;
             }
-            return returnValue;
+
+            // If nMaxCount parameter is not set, then get the full WindowText
+            if (nMaxCount <= 0)
+            {
+                nMaxCount = nLen + 1;
+            }
+
+            if (lpString == null)
+            {
+                lpString = new StringBuilder(nMaxCount);
+            }
+            else
+            {
+                lpString.Capacity = nMaxCount;
+            }
+
+            return NativeMethodsSetLastError.GetWindowText(hWnd, lpString, nMaxCount);
         }
 
         internal static int GetWindowTextLength(HandleRef hWnd)
         {
-            int returnValue = NativeMethodsSetLastError.GetWindowTextLength(hWnd);
-            if (returnValue == 0)
-            {
-                int win32Err = Marshal.GetLastWin32Error();
-                if (win32Err != 0)
-                {
-                    throw new Win32Exception(win32Err);
-                }
-            }
-            return returnValue;
+            return NativeMethodsSetLastError.GetWindowTextLength(hWnd);
         }
 
         [DllImport(ExternDll.Kernel32, ExactSpelling = true, CharSet = CharSet.Auto, SetLastError = true)]
