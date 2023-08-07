@@ -862,6 +862,7 @@ namespace System.Windows.Controls
 
         private void UpdateIsPressed()
         {
+            Debug.WriteLine("UpdateIsPressed()");
             Rect itemBounds = new Rect(new Point(), RenderSize);
 
             if ((Mouse.LeftButton == MouseButtonState.Pressed) &&
@@ -1359,16 +1360,20 @@ namespace System.Windows.Controls
         /// </summary>
         protected virtual void OnClick()
         {
+            Debug.WriteLine("OnClick()");
             OnClickImpl(false);
         }
 
         internal virtual void OnClickCore(bool userInitiated)
         {
+            Debug.WriteLine("OnClickCore()");
             OnClick();
         }
 
         internal void OnClickImpl(bool userInitiated)
         {
+            Debug.WriteLine("OnClickImpl()");
+            Debug.WriteLine($"\tIsCheckable : {IsCheckable} | IsKeyboardFocusWithin : {IsKeyboardFocusWithin}");
             if (IsCheckable)
             {
                 SetCurrentValueInternal(IsCheckedProperty, BooleanBoxes.Box(!IsChecked));
@@ -1418,6 +1423,7 @@ namespace System.Windows.Controls
         /// <param name="e"></param>
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {
+            Debug.WriteLine($"OnMouseLeftButtonDown() | Handed : {e.Handled} | UserInitiated : {e.UserInitiated}");
             if (!e.Handled)
             {
                 HandleMouseDown(e);
@@ -1437,6 +1443,7 @@ namespace System.Windows.Controls
         /// <param name="e"></param>
         protected override void OnMouseRightButtonDown(MouseButtonEventArgs e)
         {
+            Debug.WriteLine($"OnMouseRightButtonDown() | Handed : {e.Handled} | UserInitiated : {e.UserInitiated}");
             if (!e.Handled)
             {
                 HandleMouseDown(e);
@@ -1454,6 +1461,7 @@ namespace System.Windows.Controls
         /// <param name="e"></param>
         protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
         {
+            Debug.WriteLine($"OnMouseLeftButtonUp() | Handed : {e.Handled} | UserInitiated : {e.UserInitiated}");
             if (!e.Handled)
             {
                 HandleMouseUp(e);
@@ -1469,6 +1477,7 @@ namespace System.Windows.Controls
         /// <param name="e"></param>
         protected override void OnMouseRightButtonUp(MouseButtonEventArgs e)
         {
+            Debug.WriteLine($"OnMouseRightButtonUp() | Handed : {e.Handled} | UserInitiated : {e.UserInitiated}");
             if (!e.Handled)
             {
                 HandleMouseUp(e);
@@ -1483,12 +1492,14 @@ namespace System.Windows.Controls
             // mouse event was on the header portion of the MenuItem (i.e. not on
             // any part of the submenu)
             Rect r = new Rect(new Point(), RenderSize);
-
+            Debug.Write("HandleMouseDown() ");
             if (r.Contains(e.GetPosition(this)))
             {
+                Debug.Write($"| Contains | ChangedButton : {e.ChangedButton}");
                 if (e.ChangedButton == MouseButton.Left || (e.ChangedButton == MouseButton.Right && InsideContextMenu))
                 {
                     // Click happens on down for headers
+                    Debug.Write($"| Role : {Role}\n");
                     MenuItemRole role = Role;
 
                     if (role == MenuItemRole.TopLevelHeader || role == MenuItemRole.SubmenuHeader)
@@ -1497,6 +1508,7 @@ namespace System.Windows.Controls
                     }
                 }
             }
+            Debug.Write("\n");
             // Handle mouse messages b/c they were over me, I just didn't use it
             e.Handled = true;
         }
@@ -1506,12 +1518,15 @@ namespace System.Windows.Controls
             // See comment above in HandleMouseDown.
             Rect r = new Rect(new Point(), RenderSize);
 
+            Debug.Write("HandleMouseUp() ");
             if (r.Contains(e.GetPosition(this)))
             {
+                Debug.Write($"| Contains | ChangedButton : {e.ChangedButton}");
                 if (e.ChangedButton == MouseButton.Left || (e.ChangedButton == MouseButton.Right && InsideContextMenu))
                 {
                     // Click happens on up for items
                     MenuItemRole role = Role;
+                    Debug.Write($"| Role : {Role}\n");
 
                     if (role == MenuItemRole.TopLevelItem || role == MenuItemRole.SubmenuItem)
                     {
@@ -1545,6 +1560,7 @@ namespace System.Windows.Controls
                 // Handle all clicks unless there's a possibility of a ContextMenu inside a Menu.
                 e.Handled = true;
             }
+            Debug.Write("\n");
         }
 
         private static void OnAccessKeyPressed(object sender, AccessKeyPressedEventArgs e)
@@ -1631,6 +1647,7 @@ namespace System.Windows.Controls
         /// </summary>
         protected override void OnMouseLeave(MouseEventArgs  e)
         {
+            Debug.WriteLine("OnMouseLeave()");
             base.OnMouseLeave(e);
 
             MenuItemRole role = Role;
@@ -1662,6 +1679,7 @@ namespace System.Windows.Controls
         /// </summary>
         protected override void OnMouseMove(MouseEventArgs e)
         {
+            Debug.WriteLine("OnMouseMove()");
             // Ignore any mouse moves on ourselves while the popup is opening.
             MenuItem parent = ItemsControl.ItemsControlFromItemContainer(this) as MenuItem;
             if (parent != null &&
@@ -1677,12 +1695,14 @@ namespace System.Windows.Controls
         /// </summary>
         protected override void OnMouseEnter(MouseEventArgs  e)
         {
+            Debug.WriteLine("OnMouseEnter()");
             base.OnMouseEnter(e);
             MouseEnterHelper();
         }
 
         private void MouseEnterHelper()
         {
+            Debug.WriteLine($"MouseEnterHelper() | Role : {Role} | IsMouseOver : {IsMouseOver} | IsSelected : {IsSelected}");
             ItemsControl parent = ItemsControl.ItemsControlFromItemContainer(this);
             // Do not enter and highlight this item until the popup has opened
             // This prevents immediately selecting a submenu item when opening the menu
@@ -1720,6 +1740,7 @@ namespace System.Windows.Controls
 
         private void MouseEnterInMenuMode(MenuItemRole role)
         {
+            Debug.WriteLine($"MouseEnterInMenuMode() | Role : {role} | IsSelected : {IsSelected} | IsKeyboardFocusWithin : {IsKeyboardFocusWithin}");
             switch (role)
             {
                 case MenuItemRole.TopLevelHeader:
@@ -1788,6 +1809,7 @@ namespace System.Windows.Controls
             // When mouse moves out of a submenu item, we should deselect
             // the item.  This is what Win32 does, and our menus don't
             // feel right without it.
+            Debug.WriteLine($"MouseLeaveInMenuMode() | Role : {role} | IsSelected : {IsSelected} | IsKeyboardFocusWithin : {IsKeyboardFocusWithin}");
             if (role == MenuItemRole.SubmenuHeader || role == MenuItemRole.SubmenuItem)
             {
                 if (MenuItem.GetBoolField(this, BoolField.IgnoreNextMouseLeave))
@@ -1844,6 +1866,7 @@ namespace System.Windows.Controls
         /// </summary>
         protected override void OnGotKeyboardFocus(KeyboardFocusChangedEventArgs e)
         {
+            Debug.WriteLine($"OnGotKeyboardFocus()");
             base.OnGotKeyboardFocus(e);
 
             // Focus drives selection.  If a MenuItem is focused, it should
@@ -1859,6 +1882,7 @@ namespace System.Windows.Controls
         /// </summary>
         protected override void OnIsKeyboardFocusWithinChanged(DependencyPropertyChangedEventArgs e)
         {
+            Debug.WriteLine($"OnIsKeyboardFocusWithinChanged() | IsKeyboardFocusWithin : {IsKeyboardFocusWithin} | IsSelected : {IsSelected}");
             base.OnIsKeyboardFocusWithinChanged(e);
 
             if (IsKeyboardFocusWithin && !IsSelected)
@@ -1883,6 +1907,7 @@ namespace System.Windows.Controls
         /// <param name="e">Event arguments</param>
         protected override void OnKeyDown(KeyEventArgs e)
         {
+            Debug.WriteLine($"OnKeyDown() | Key : {e.Key}");
             base.OnKeyDown(e);
 
             bool handled = false;
@@ -2197,12 +2222,14 @@ namespace System.Windows.Controls
 
         private void SetMenuMode(bool menuMode)
         {
+            Debug.WriteLine($"SetMenuMode() | MenuMode : {menuMode}");
             Debug.Assert(Role == MenuItemRole.TopLevelHeader || Role == MenuItemRole.TopLevelItem, "MenuItem was not top-level");
 
             MenuBase parentMenu = LogicalParent as MenuBase;
 
             if (parentMenu != null)
             {
+                Debug.WriteLine($"parentMenu | IsMenuMode : {parentMenu.IsMenuMode}");
                 if (parentMenu.IsMenuMode != menuMode)
                 {
                     parentMenu.IsMenuMode = menuMode;
@@ -2288,6 +2315,7 @@ namespace System.Windows.Controls
 
         internal void ClickHeader()
         {
+            Debug.WriteLine($"ClickHeader() | IsKeyboardFocusWithin : {IsKeyboardFocusWithin} | IsSubmenuOpen : {IsSubmenuOpen}");
             if (!IsKeyboardFocusWithin)
             {
                 FocusOrSelect();
@@ -2310,6 +2338,7 @@ namespace System.Windows.Controls
 
         internal bool OpenMenu()
         {
+            Debug.Write($"OpenMenu() | IsSubmenuOpen : {IsSubmenuOpen}");
             if (!IsSubmenuOpen)
             {
                 // Verify that the parent of the MenuItem is valid;
@@ -2323,11 +2352,12 @@ namespace System.Windows.Controls
                 {
                     // Parent must be MenuItem or MenuBase in order for menus to open.
                     // Otherwise, odd behavior will occur.
+                    Debug.Write($" | owner != null\n");
                     SetCurrentValueInternal(IsSubmenuOpenProperty, BooleanBoxes.TrueBox);
                     return true; // The value was actually changed
                 }
             }
-
+            Debug.Write("\n");
             return false;
         }
 
@@ -2351,6 +2381,7 @@ namespace System.Windows.Controls
         /// <returns>true if navigation was successful.</returns>
         private bool MenuItemNavigate(Key key, ModifierKeys modifiers)
         {
+            Debug.WriteLine($"MenuItemNavigate() | Key : {key}");
             if (key == Key.Left || key == Key.Right || key == Key.Up || key == Key.Down)
             {
                 ItemsControl parent = ItemsControlFromItemContainer(this);
@@ -2498,6 +2529,7 @@ namespace System.Windows.Controls
         /// <param name="role"></param>
         private void OpenHierarchy(MenuItemRole role)
         {
+            Debug.WriteLine($"OpenHierarchy() | Role : {role}");
             FocusOrSelect();
 
             if (role == MenuItemRole.TopLevelHeader || role == MenuItemRole.SubmenuHeader)
@@ -2511,6 +2543,7 @@ namespace System.Windows.Controls
         /// </summary>
         private void FocusOrSelect()
         {
+            Debug.WriteLine($"FocusOrSelect() | IsKeyboardFocusWithin : {IsKeyboardFocusWithin} | IsSelected : {IsSelected} | IsHighlighted : {IsHighlighted}");
             // Setting focus will cause the item to be selected,
             // but if we fail to focus we should still select.
             // (This is to help enable focusless menus).
