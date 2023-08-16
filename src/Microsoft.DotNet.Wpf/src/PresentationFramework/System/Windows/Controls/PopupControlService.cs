@@ -46,14 +46,21 @@ namespace System.Windows.Controls
         {
             if (e.StagingItem.Input.RoutedEvent == InputManager.InputReportEvent)
             {
+                // Debug.WriteLine($"OnPostProcessInput() | {e.StagingItem.Input.RoutedEvent}");
                 InputReportEventArgs report = (InputReportEventArgs)e.StagingItem.Input;
+                // Debug.WriteLine($"> report.Handled == {report.Handled} | Report Tyle : {report.Report.Type}");
                 if (!report.Handled)
                 {
                     if (report.Report.Type == InputType.Mouse)
                     {
                         RawMouseInputReport mouseReport = (RawMouseInputReport)report.Report;
+
+                        // Debug.WriteLine("------");
+                        // Debug.Write($"OnPostProcessInput() | mouseReport.Actions : ");
                         if ((mouseReport.Actions & RawMouseActions.AbsoluteMove) == RawMouseActions.AbsoluteMove)
                         {
+                            // Debug.Write("RawMouseActions.AbsoluteMove | ");
+                            // Debug.WriteLine($"Mouse.LB = {Mouse.LeftButton} | Mouse.RB = {Mouse.RightButton}");
                             if ((Mouse.LeftButton == MouseButtonState.Pressed) ||
                                 (Mouse.RightButton == MouseButtonState.Pressed))
                             {
@@ -65,6 +72,7 @@ namespace System.Windows.Controls
 
                                 if (directlyOver != null)
                                 {
+                                    // Debug.Write($"> directlyOver != null | Mouse.CapturedMode : {Mouse.CapturedMode} ");
                                     // If possible, check that the mouse position is within the render bounds
                                     // (avoids mouse capture confusion).
                                     if (Mouse.CapturedMode != CaptureMode.None)
@@ -80,16 +88,20 @@ namespace System.Windows.Controls
                                             // Hittest to find the element the mouse is over
                                             IInputElement enabledHit;
                                             rootAsUIElement.InputHitTest(pt, out enabledHit, out directlyOver);
+                                            Debug.WriteLine($"| rootAsUIElement != null | enabledHit != {enabledHit != null} | directlyOver != {directlyOver != null}");
                                         }
                                         else
                                         {
                                             directlyOver = null;
+                                            Debug.WriteLine($"| rootAsUIElement == null | directlyOver = null");
                                         }
                                     }
 
                                     if (directlyOver != null)
                                     {
                                         // Process the mouse move
+                                        // Debug.WriteLine("directlyOver != null | Calling OnMouseMove()");
+                                        Debug.WriteLine($"OnPostProcessInput() | mouseReport - {mouseReport.X} {mouseReport.Y} {mouseReport.Timestamp} {mouseReport.Mode} {mouseReport.Actions}");
                                         OnMouseMove(directlyOver);
                                     }
                                 }
@@ -97,6 +109,7 @@ namespace System.Windows.Controls
                         }
                         else if ((mouseReport.Actions & RawMouseActions.Deactivate) == RawMouseActions.Deactivate)
                         {
+                            Debug.WriteLine("RawMouseActions.Deavtivate");
                             DismissToolTips();
                             LastMouseDirectlyOver = null;
 
@@ -141,6 +154,7 @@ namespace System.Windows.Controls
 
         private void OnMouseMove(IInputElement directlyOver)
         {
+            Debug.WriteLine("--- Start : OnMouseMove() ---");
             if (MouseHasLeftSafeArea())
             {
                 DismissCurrentToolTip();
@@ -155,8 +169,10 @@ namespace System.Windows.Controls
             }
             else
             {
+                Debug.Write("> directlyOver == LastMouseDirectlyOver ");
                 if (PendingToolTipTimer?.Tag == BooleanBoxes.TrueBox)
                 {
+                    Debug.WriteLine($"| PTTTimer?.Tag == True | CTT == null : {CurrentToolTip == null} ");
                     // the pending tooltip is on a short delay (see BeginShowToolTip)
                     if (CurrentToolTip == null)
                     {
@@ -171,18 +187,26 @@ namespace System.Windows.Controls
                         PendingToolTipTimer.Start();
                     }
                 }
+                else
+                {
+                    Debug.WriteLine(" ");
+                }
             }
+            Debug.WriteLine("--- End : OnMouseMove() ---");
         }
 
         /////////////////////////////////////////////////////////////////////
         private void ProcessGotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
         {
+            Debug.WriteLine("------");
+            Debug.Write("ProcessGotKeyboardFocus()");
             // any focus change dismisses tooltips triggered from the keyboard
             DismissKeyboardToolTips();
 
             // focus changes caused by keyboard navigation can show a tooltip
             if (KeyboardNavigation.IsKeyboardMostRecentInputDevice())
             {
+                Debug.WriteLine(" | IsKeyboardMostRecentInputDevice() : True ");
                 IInputElement focusedElement = e.NewFocus;
                 DependencyObject owner = FindToolTipOwner(focusedElement, ToolTipService.TriggerAction.KeyboardFocus);
 
@@ -193,6 +217,8 @@ namespace System.Windows.Controls
         /////////////////////////////////////////////////////////////////////
         private void ProcessLostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
         {
+            Debug.WriteLine("------");
+            Debug.WriteLine("ProcessLostKeyboardFocus()");
             // any focus change dismisses tooltips triggered from the keyboard
             DismissKeyboardToolTips();
         }
@@ -200,6 +226,8 @@ namespace System.Windows.Controls
         /////////////////////////////////////////////////////////////////////
         private void ProcessMouseUp(object sender, MouseButtonEventArgs e)
         {
+            Debug.WriteLine("------");
+            Debug.WriteLine($"ProcessKeyUp() | Handled : {e.Handled}");
             DismissToolTips();
 
             if (!e.Handled)
@@ -223,11 +251,14 @@ namespace System.Windows.Controls
         /////////////////////////////////////////////////////////////////////
         private void ProcessKeyDown(object sender, KeyEventArgs e)
         {
+            Debug.WriteLine("------");
+            Debug.Write($"ProcessKeyDown() | Handled : {e.Handled} | ");
             if (!e.Handled)
             {
                 const ModifierKeys ModifierMask = ModifierKeys.Alt | ModifierKeys.Control | ModifierKeys.Shift | ModifierKeys.Windows;
                 ModifierKeys modifierKeys = Keyboard.Modifiers & ModifierMask;
 
+                Debug.WriteLine($"Modifier Keys : {modifierKeys} | e.SystemKey : {e.SystemKey}");
                 if ((e.SystemKey == Key.F10) && (modifierKeys == (ModifierKeys.Control | ModifierKeys.Shift)))
                 {
                     e.Handled = OpenOrCloseToolTipViaShortcut();
@@ -250,6 +281,8 @@ namespace System.Windows.Controls
         /////////////////////////////////////////////////////////////////////
         private void ProcessKeyUp(object sender, KeyEventArgs e)
         {
+            Debug.WriteLine("------");
+            Debug.WriteLine($"ProcessKeyUp() | Handled : {e.Handled}");
             if (!e.Handled)
             {
                 if (e.Key == Key.Apps)
@@ -273,7 +306,9 @@ namespace System.Windows.Controls
 
         private bool OpenOrCloseToolTipViaShortcut()
         {
+            Debug.WriteLine("------");
             DependencyObject owner = FindToolTipOwner(Keyboard.FocusedElement, ToolTipService.TriggerAction.KeyboardShortcut);
+            Debug.Write($"OpenOrCloseToolTipViaShortcut() | owner == null : {owner == null} ");
             if (owner == null)
                 return false;
 
@@ -281,12 +316,14 @@ namespace System.Windows.Controls
             // if the owner's tooltip is open, dismiss it.  Otherwise, show it.
             if (owner == GetOwner(CurrentToolTip))
             {
+                Debug.WriteLine("| owner == GetOwner(CurrentToolTip) ");
                 DismissCurrentToolTip();
             }
             else
             {
                 if (owner == GetOwner(PendingToolTip))
                 {
+                    Debug.WriteLine($"| owner == GetOwner(PendingToolTip) ");
                     // discard a previous pending request, so that the new one isn't ignored.
                     // This ensures that the tooltip opens immediately.
                     DismissPendingToolTip();
@@ -308,6 +345,7 @@ namespace System.Windows.Controls
         /// <param name="triggerAction">The action that triggered showing the tooltip</param>
         private void BeginShowToolTip(DependencyObject o, ToolTipService.TriggerAction triggerAction)
         {
+            Debug.WriteLine($"BeginShowToolTip() | triggerAction : {triggerAction} | o == LastMouseToolTipOwner : {o==LastMouseToolTipOwner}");
             if (triggerAction == ToolTipService.TriggerAction.Mouse)
             {
                 // ignore a mouse request if the mouse hasn't moved off the owner since the last mouse request
@@ -318,13 +356,17 @@ namespace System.Windows.Controls
                 // cancel a pending mouse request if the mouse has moved off its owner
                 if (PendingToolTip != null && !PendingToolTip.FromKeyboard && o != GetOwner(PendingToolTip))
                 {
+                    Debug.WriteLine($"> Cancelling PendingToolTip request");
                     DismissPendingToolTip();
                 }
             }
 
             // ignore a request if no owner, or already showing or pending its tooltip
             if (o == null || o == GetOwner(PendingToolTip) || o == GetOwner(CurrentToolTip))
+            {
+                Debug.WriteLine($"> Ignore Request - o : null = {o==null} | GetOwner(PendingToolTip) = {o==GetOwner(PendingToolTip)} | GetOwner(CurrentToolTip) = {o==GetOwner(CurrentToolTip)}");
                 return;
+            }
 
             // discard the previous pending request
             DismissPendingToolTip();
@@ -335,6 +377,7 @@ namespace System.Windows.Controls
             // decide when to promote to current
             bool useShortDelay = false;
             bool showNow = _quickShow;
+            Debug.Write($"> showNow, useShortDelay : ( {showNow}, {useShortDelay} ) ");
             if (!showNow)
             {
                 ToolTip toReplace = CurrentToolTip;
@@ -374,6 +417,8 @@ namespace System.Windows.Controls
                         break;
                 }
 
+                Debug.Write($"| ( {showNow}, {useShortDelay} ) | toReplace != null : {toReplace != null} ");
+
                 // replacing a tooltip with BetweenShowDelay=0 should invoke the delay
                 if (toReplace != null && (showNow || useShortDelay))
                 {
@@ -384,10 +429,12 @@ namespace System.Windows.Controls
                         useShortDelay = false;
                     }
                 }
+                Debug.Write($"| ( {showNow}, {useShortDelay} ) ");
             }
 
             // promote now, or schedule delayed promotion
             int showDelay = (showNow ? 0 : useShortDelay ? ShortDelay : ToolTipService.GetInitialShowDelay(o));
+            Debug.WriteLine($"| showDelay = {showDelay}");
             if (showDelay == 0)
             {
                 PromotePendingToolTipToCurrent(triggerAction);
@@ -405,7 +452,7 @@ namespace System.Windows.Controls
         private void PromotePendingToolTipToCurrent(ToolTipService.TriggerAction triggerAction)
         {
             DependencyObject o = GetOwner(PendingToolTip);
-
+            Debug.WriteLine($"PromotePendingToolTipToCurrent() | o != null : {o!=null}");
             DismissToolTips();
 
             if (o != null)
@@ -422,13 +469,17 @@ namespace System.Windows.Controls
         /// <param name="fromKeyboard">True if the tooltip is triggered by keyboard</param>
         private void ShowToolTip(DependencyObject o, bool fromKeyboard)
         {
+            Debug.WriteLine("------");
             Debug.Assert(_currentToolTip == null);
             ResetCurrentToolTipTimer();
             OnForceClose(null, EventArgs.Empty);
 
+            Debug.Write($"ShowToolTip() | fromKeyboard : {fromKeyboard} ");
             bool show = true;
 
             IInputElement element = o as IInputElement;
+
+            Debug.Write($"| element != null : {element!=null} ");
             if (element != null)
             {
                 ToolTipEventArgs args = new ToolTipEventArgs(opening:true);
@@ -438,11 +489,13 @@ namespace System.Windows.Controls
                 // [re-examine _currentToolTip, re-entrancy can change it]
                 show = !args.Handled && (_currentToolTip == null);
             }
+            Debug.Write($"| show : {show} | _currentToolTip == null : {_currentToolTip == null} ");
 
             if (show)
             {
                 object tooltip = ToolTipService.GetToolTip(o);
                 ToolTip tip = tooltip as ToolTip;
+                Debug.Write($"| tip != null : {tip != null} ");
                 if (tip != null)
                 {
                     _currentToolTip = tip;
@@ -471,6 +524,7 @@ namespace System.Windows.Controls
                 _currentToolTip.Closed += OnToolTipClosed;
                 _currentToolTip.FromKeyboard = fromKeyboard;
 
+                Debug.Write($" | _currentToolTip.IsOpen : {_currentToolTip.IsOpen}");
                 if (!_currentToolTip.IsOpen)
                 {
                     // open the tooltip, and finish the initialization when its popup window is available.
@@ -493,6 +547,7 @@ namespace System.Windows.Controls
 
         private void OnShowDurationTimerExpired(object sender, EventArgs e)
         {
+            Debug.WriteLine("OnShowDurationExpired()");
             DismissCurrentToolTip();
         }
 
@@ -501,6 +556,7 @@ namespace System.Windows.Controls
         internal void ReplaceCurrentToolTip()
         {
             ToolTip currentToolTip = _currentToolTip;
+            Debug.WriteLine($"ReplaceCurrentToolTip() | currentToolTip == {currentToolTip == null}");
             if (currentToolTip == null)
                 return;
 
@@ -515,25 +571,32 @@ namespace System.Windows.Controls
 
         internal void DismissToolTipsForOwner(DependencyObject o)
         {
+            Debug.Write("DismissToolTipsForOwner() |");
             if (o == GetOwner(PendingToolTip))
             {
+                Debug.WriteLine("o == GetOwner(PendingToolTip)");
                 DismissPendingToolTip();
             }
 
             if (o == GetOwner(CurrentToolTip))
             {
+                Debug.WriteLine("o == GetOwner(CurrentToolTip)");
                 DismissCurrentToolTip();
             }
         }
 
         private void DismissToolTips()
         {
+            Debug.WriteLine("------");
+            Debug.WriteLine("DismissToolTips()");
             DismissPendingToolTip();
             DismissCurrentToolTip();
         }
 
         private void DismissKeyboardToolTips()
         {
+            Debug.WriteLine("------");
+            Debug.WriteLine($"DismissKeyboardToolTips() | PendingToolTip?.FromKeyboard ?? false = {PendingToolTip?.FromKeyboard ?? false} | CurrentToolTip?.FromKeyboard ?? false = {CurrentToolTip?.FromKeyboard ?? false}");
             if (PendingToolTip?.FromKeyboard ?? false)
             {
                 DismissPendingToolTip();
@@ -547,6 +610,7 @@ namespace System.Windows.Controls
 
         private void DismissPendingToolTip()
         {
+            Debug.WriteLine($"DismissPendingToolTip() | PendingToolTipTimer != {PendingToolTipTimer != null} | PendingToolTip != {PendingToolTip != null}");
             if (PendingToolTipTimer != null)
             {
                 PendingToolTipTimer.Stop();
@@ -562,6 +626,7 @@ namespace System.Windows.Controls
 
         private void DismissCurrentToolTip()
         {
+            Debug.WriteLine("DismissCurrentToolTip()");
             ToolTip currentToolTip = _currentToolTip;
             _currentToolTip = null;
             CloseToolTip(currentToolTip);
@@ -570,8 +635,14 @@ namespace System.Windows.Controls
         // initiate the process of closing the tooltip's popup.
         private void CloseToolTip(ToolTip tooltip)
         {
+            Debug.WriteLine("--- Start : CloseToolTip() ---");
+            Debug.Write("CloseToolTip() ");
             if (tooltip == null)
+            {
+                Debug.WriteLine("| tooltip == null");
                 return;
+            }
+            Debug.Write("\n");
 
             SetSafeArea(null);
             ResetCurrentToolTipTimer();
@@ -582,22 +653,27 @@ namespace System.Windows.Controls
             try
             {
                 // notify listeners that the tooltip is closing
+                Debug.Write("> try");
                 if (tooltip.IsOpen)
                 {
                     IInputElement element = owner as IInputElement;
+                    Debug.Write($" | tooltip.IsOpen == true | element != null : {element != null}");
                     if (element != null)
                     {
                         // ** Public callout - re-entrancy is possible **//
                         element.RaiseEvent(new ToolTipEventArgs(opening:false));
                     }
                 }
+                Debug.Write("\n");
             }
             finally
             {
                 // close the tooltip popup
                 // [re-examine IsOpen - re-entrancy could change it]
+                Debug.Write("> finally");
                 if (tooltip.IsOpen)
                 {
+                    Debug.Write(" | tooltip.IsOpen == true ");
                     // ** Public callout - re-entrancy is possible **//
                     tooltip.IsOpen = false;
 
@@ -612,6 +688,7 @@ namespace System.Windows.Controls
                     // can open without the usual delay
                     int betweenShowDelay = ToolTipService.GetBetweenShowDelay(owner);
                     _quickShow = (betweenShowDelay > 0);
+                    Debug.WriteLine($" | _quickShow : {_quickShow}");
                     if (_quickShow)
                     {
                         CurrentToolTipTimer = new DispatcherTimer(DispatcherPriority.Normal);
@@ -622,9 +699,11 @@ namespace System.Windows.Controls
                 }
                 else
                 {
+                    Debug.WriteLine(" | tooltip.IsOpen == false");
                     ClearServiceProperties(tooltip);
                 }
             }
+            Debug.WriteLine("--- End : CloseToolTip() ---");
         }
 
         /// <summary>
@@ -639,21 +718,26 @@ namespace System.Windows.Controls
             // a call from OnToolTipClosed while tooltip.IsOpen is still true.  In that case we need to
             // leave the properties in place - CloseToolTip needs them (as does the popup if it should
             // re-open).  They will get cleared by OnForceClose, if not earlier.
+            Debug.Write("ClearServiceProperties()");
             if (tooltip != null && !tooltip.IsOpen)
             {
+                Debug.Write(" | tooltip != null && !tooltip.IsOpen");
                 tooltip.ClearValue(OwnerProperty);
                 tooltip.FromKeyboard = false;
                 tooltip.Closed -= OnToolTipClosed;
 
                 if ((bool)tooltip.GetValue(ServiceOwnedProperty))
                 {
+                    Debug.Write(" | tooltip.GetValue(ServiceOwnerProperty) == true");
                     BindingOperations.ClearBinding(tooltip, ToolTip.ContentProperty);
                 }
             }
+            Debug.Write("\n");
         }
 
         private DependencyObject FindToolTipOwner(IInputElement element, ToolTipService.TriggerAction triggerAction)
         {
+            Debug.Write($"FindToolTipOwner() | element == null : {element==null} | TriggerAction : {triggerAction} ");
             if (element == null)
                 return null;
 
@@ -683,7 +767,7 @@ namespace System.Windows.Controls
             {
                 owner = null;
             }
-
+            Debug.WriteLine($"> owner == null : {owner == null}");
             return owner;
         }
 
@@ -716,12 +800,15 @@ namespace System.Windows.Controls
 
         private void ResetCurrentToolTipTimer()
         {
+            Debug.Write($"ResetCurrentToolTipTimer() ");
             if (CurrentToolTipTimer != null)
             {
+                Debug.Write("| CurrentToolTipTimer != null ");
                 CurrentToolTipTimer.Stop();
                 CurrentToolTipTimer = null;
                 _quickShow = false;
             }
+            Debug.Write("\n");
         }
 
         /// <summary>
@@ -729,6 +816,7 @@ namespace System.Windows.Controls
         /// </summary>
         private void OnToolTipOpened(object sender, EventArgs e)
         {
+            Debug.WriteLine("OnToolTipOpened()");
             ToolTip toolTip = (ToolTip)sender;
             toolTip.Opened -= OnToolTipOpened;
 
@@ -739,8 +827,10 @@ namespace System.Windows.Controls
         private void OnToolTipClosed(object sender, EventArgs e)
         {
             ToolTip toolTip = (ToolTip)sender;
+            Debug.Write("OnToolTipClosed() | ");
             if (toolTip != CurrentToolTip)
             {
+                Debug.WriteLine("toolTip != CurrentToolTip");
                 // If we manage the tooltip (the normal case), the current tooltip closes via
                 //  1. DismissCurrentToolTip sets _currentToolTip=null and calls CloseToolTip
                 //  2. CloseToolTip sets toolTip.IsOpen=false, and returns
@@ -751,6 +841,7 @@ namespace System.Windows.Controls
             }
             else
             {
+                Debug.WriteLine("toolTip == CurrentToolTip");
                 // We get here if the app closes the current tooltip or its popup directly.
                 // Do nothing (i.e. ignore the event).  This leaves the service properties in place -
                 // eventually DismissCurrentToolTip will call CloseToolTip, which needs them
@@ -765,6 +856,7 @@ namespace System.Windows.Controls
         // The previous tooltip hasn't closed and we are trying to open a new one
         private void OnForceClose(object sender, EventArgs e)
         {
+            Debug.WriteLine($"OnForceClose() | _forceCloseTimer != {_forceCloseTimer != null}");
             if (_forceCloseTimer != null)
             {
                 _forceCloseTimer.Stop();
@@ -777,6 +869,7 @@ namespace System.Windows.Controls
 
         private void OnBetweenShowDelay(object source, EventArgs e)
         {
+            Debug.WriteLine("OnBetweenShowDelay()");
             ResetCurrentToolTipTimer();
         }
 
@@ -826,6 +919,7 @@ namespace System.Windows.Controls
         private ToolTip SentinelToolTip(DependencyObject o, ToolTipService.TriggerAction triggerAction)
         {
             // lazy creation, because we cannot create it in the ctor (infinite loop with FrameworkServices..ctor)
+            Debug.WriteLine("SentinelToolTip()");
             if (_sentinelToolTip == null)
             {
                 _sentinelToolTip = new ToolTip();
@@ -841,15 +935,17 @@ namespace System.Windows.Controls
         private void SetSafeArea(ToolTip tooltip)
         {
             SafeArea = null;     // default is no safe area
-
+            Debug.WriteLine($"SetSafeArea() | tooltip != null : {tooltip != null} ");
             // safe area is only needed for tooltips triggered by mouse
             if (tooltip != null && !tooltip.FromKeyboard)
             {
                 DependencyObject owner = GetOwner(tooltip);
                 PresentationSource presentationSource = (owner != null) ? PresentationSource.CriticalFromVisual(owner) : null;
 
+                Debug.Write($"| tooltip.FromKeyboard == false ");
                 if (presentationSource != null)
                 {
+                    Debug.Write($"| presentationSource != null ");
                     // build a list of (native) rects, in the presentationSource's client coords
                     List<NativeMethods.RECT> rects = new List<NativeMethods.RECT>();
 
@@ -858,10 +954,14 @@ namespace System.Windows.Controls
                     ContentElement ownerCE;
                     if ((ownerUIE = owner as UIElement) != null)
                     {
+                        Debug.WriteLine("> owner is UIElement");
                         // tooltip is owned by a UIElement.
                         Rect rectElement = new Rect(new Point(0, 0), ownerUIE.RenderSize);
                         Rect rectRoot = PointUtil.ElementToRoot(rectElement, ownerUIE, presentationSource);
                         Rect ownerRect = PointUtil.RootToClient(rectRoot, presentationSource);
+
+                        Debug.WriteLine($"rectElement : {rectElement.X} {rectElement.Y} {rectElement.Width} {rectElement.Height}");
+                        Debug.WriteLine($"rectRoot : {rectRoot.X} {rectRoot.Y} {rectRoot.Width} {rectRoot.Height}");
 
                         if (!ownerRect.IsEmpty)
                         {
@@ -870,6 +970,7 @@ namespace System.Windows.Controls
                     }
                     else if ((ownerCE = owner as ContentElement) != null)
                     {
+                        Debug.WriteLine("> owner is ContentElement");
                         // tooltip is owned by a ContentElement (e.g. Hyperlink).
                         IContentHost ichParent = null;
                         UIElement uieParent = KeyboardNavigation.GetParentUIElementFromContentElement(ownerCE, ref ichParent);
@@ -897,6 +998,10 @@ namespace System.Windows.Controls
                             }
                         }
                     }
+                    else
+                    {
+                        Debug.Write("\n");
+                    }
 
                     // add the tooltip rect
                     Rect screenRect = tooltip.GetScreenRect();
@@ -908,24 +1013,46 @@ namespace System.Windows.Controls
                         rects.Add(PointUtil.FromRect(tooltipRect));
                     }
 
+                    int i=0;
+                    foreach(var r in rects)
+                    {
+                        i++;
+                        Debug.WriteLine($"> Rect {i} - Left : {r.left} | Top : {r.top} | Right : {r.right} | Botton : {r.bottom}");
+                    }
+
                     // find the convex hull
                     SafeArea = new ConvexHull(presentationSource, rects);
+                }
+                else
+                {
+                    Debug.WriteLine($"| presentationSource == null");
                 }
             }
         }
 
         private bool MouseHasLeftSafeArea()
         {
+            Debug.Write($"MouseHasLeftSafeArea() ");
             // if there is no SafeArea, the mouse didn't leave it
             if (SafeArea == null)
+            {
+                Debug.WriteLine("| SafeArea == null");
                 return false;
+            }
 
             // if the current tooltip's owner is no longer being displayed, the safe area is no longer valid
             // so the mouse has effectively left it
             DependencyObject owner = GetOwner(CurrentToolTip);
             PresentationSource presentationSource = (owner != null) ? PresentationSource.CriticalFromVisual(owner) : null;
             if (presentationSource == null)
+            {
+                Debug.WriteLine(" | presentationSource == null ");
                 return true;
+            }
+            else
+            {
+                Debug.Write("\n");
+            }
 
             // if the safe area is valid, see if it still contains the mouse point
             return !(SafeArea?.ContainsMousePoint() ?? true);
@@ -957,6 +1084,7 @@ namespace System.Windows.Controls
         private void RaiseContextMenuOpeningEvent(KeyEventArgs e)
         {
             IInputElement source = e.OriginalSource as IInputElement;
+            Debug.WriteLine($"RaiseContentMenuOpeningEvent() | source != null : {source != null}");
             if (source != null)
             {
                 if (RaiseContextMenuOpeningEvent(source, -1.0, -1.0,e.UserInitiated))
@@ -969,39 +1097,48 @@ namespace System.Windows.Controls
         private bool RaiseContextMenuOpeningEvent(IInputElement source, double x, double y,bool userInitiated)
         {
             // Fire the event
+            Debug.WriteLine("------");
+            Debug.Write($"RaiseContextMenuOpeningEvent() | x = {x} | y = {y} | userInitiated = {userInitiated} ");
             ContextMenuEventArgs args = new ContextMenuEventArgs(source, true /* opening */, x, y);
             DependencyObject sourceDO = source as DependencyObject;
             if (userInitiated && sourceDO != null)
             {
+                Debug.Write($"| sourceDo != null ");
                 if (sourceDO is UIElement uiElement)
                 {
+                    Debug.Write("| sourceDO is UIElement ");
                     uiElement.RaiseEvent(args, userInitiated);
                 }
                 else if (sourceDO is ContentElement contentElement)
                 {
+                    Debug.Write("| sourceDO is UIElement ");
                     contentElement.RaiseEvent(args, userInitiated);
                 }
                 else if (sourceDO is UIElement3D uiElement3D)
                 {
+                    Debug.Write("| sourceDO is UIElement ");
                     uiElement3D.RaiseEvent(args, userInitiated);
                 }
                 else
                 {
+                    Debug.Write("| source.RaiseEvent ");
                     source.RaiseEvent(args);
                 }
             }
             else
             {
+                Debug.Write("| source.RaiseEvent ");
                 source.RaiseEvent(args);
             }
 
-
+            Debug.WriteLine($"| args.Handled : {args.Handled}");
             if (!args.Handled)
             {
                 // No one handled the event, auto show any available ContextMenus
 
                 // Saved from the bubble up the tree where we looked for a set ContextMenu property
                 DependencyObject o = args.TargetElement;
+                Debug.WriteLine($"> o != null : {o!=null} | ContextMenuService.ContextMenuIsEnabled(o) : {ContextMenuService.ContextMenuIsEnabled(o)}");
                 if ((o != null) && ContextMenuService.ContextMenuIsEnabled(o))
                 {
                     // Retrieve the value
@@ -1041,6 +1178,7 @@ namespace System.Windows.Controls
 
         private void OnContextMenuClosed(object source, RoutedEventArgs e)
         {
+            Debug.WriteLine("OnContextMenuClosed()");
             ContextMenu cm = source as ContextMenu;
             if (cm != null)
             {
@@ -1245,6 +1383,7 @@ namespace System.Windows.Controls
         // When the owner changes, coerce all attached properties from the service
         private static void OnOwnerChanged(DependencyObject o, DependencyPropertyChangedEventArgs e)
         {
+            Debug.WriteLine($"OnOwnerChanged() | o is ContextMenu : {o is ContextMenu} | o is ToolTip : {o is ToolTip}");
             if (o is ContextMenu)
             {
                 o.CoerceValue(ContextMenu.HorizontalOffsetProperty);
@@ -1589,10 +1728,12 @@ namespace System.Windows.Controls
             // Test whether the current mouse point lies within the convex hull
             internal bool ContainsMousePoint()
             {
+                Debug.WriteLine("------");
+                Debug.Write("ContainsMousePoint() ");
                 // get the coordinates of the current mouse point, relative to the Active source
                 PresentationSource mouseSource = Mouse.PrimaryDevice.CriticalActiveSource;
                 System.Windows.Point pt = Mouse.PrimaryDevice.NonRelativePosition;
-
+                Debug.Write($"| pt : {pt.X} {pt.Y} ");
                 // translate the point to our source's coordinates, if necessary
                 // (e.g. if the tooltip's owner comes from a window with capture,
                 // such as the popup of a ComboBox)
@@ -1600,7 +1741,15 @@ namespace System.Windows.Controls
                 {
                     System.Windows.Point ptScreen = PointUtil.ClientToScreen(pt, mouseSource);
                     pt = PointUtil.ScreenToClient(ptScreen, _source);
+                    Debug.Write($"| ptScreen : {ptScreen.X} {ptScreen.Y} | pt : {pt.X} {pt.Y} ");
                 }
+                Debug.Write("\n");
+                Debug.Write("Safe Area Points : ");
+                foreach(Point p in _points)
+                {
+                    Debug.Write($"[ {p.X} {p.Y} {p.Direction} ], ");
+                }
+                Debug.WriteLine(" ");
 
                 #if DEBUG
                 // NonRelativePosition returns the mouse point in unscaled screen coords, relative
@@ -1644,9 +1793,13 @@ namespace System.Windows.Controls
             // Test whether a given mouse point (x,y) lies within the convex hull
             internal bool ContainsPoint(PresentationSource source, int x, int y)
             {
+                Debug.Write("ContainsPoint() ");
                 // points from the wrong source are not included
                 if (source != _source)
+                {
+                    Debug.WriteLine("| source != _source");
                     return false;
+                }
 
                 // a point is included if it's in the left half-plane of every
                 // edge.  We test this in two passes, to postpone (and perhaps
@@ -1660,16 +1813,32 @@ namespace System.Windows.Controls
                     switch (_points[i].Direction)
                     {
                         case Direction.Left:
-                            if (y < _points[i].Y) return false;
+                            if (y < _points[i].Y) 
+                            {
+                                Debug.WriteLine($"| False | Left | {i} {_points[i].X}, {_points[i].Y}");
+                                return false;
+                            }
                             break;
                         case Direction.Right:
-                            if (y >= _points[i].Y) return false;
+                            if (y >= _points[i].Y)
+                            {
+                                Debug.WriteLine($"| False | Right | {i} {_points[i].X}, {_points[i].Y}");
+                                return false;
+                            }
                             break;
                         case Direction.Up:
-                            if (x >= _points[i].X) return false;
+                            if (x >= _points[i].X)
+                            {
+                                Debug.WriteLine($"| False | Up | {i} {_points[i].X}, {_points[i].Y}");
+                                return false;
+                            }
                             break;
                         case Direction.Down:
-                            if (x < _points[i].X) return false;
+                            if (x < _points[i].X)
+                            {
+                                Debug.WriteLine($"| False | Down | {i} {_points[i].X}, {_points[i].Y}");
+                                return false;
+                            }
                             break;
                     }
                 }
@@ -1685,12 +1854,16 @@ namespace System.Windows.Controls
                             Point p = new Point(x, y);
 
                             if (Cross(_points[i], _points[next], p) > 0)
+                            {
+                                Debug.WriteLine("| False | Pass2");
                                 return false;
+                            }
                             break;
                     }
                 }
 
                 // the point is on the correct side of all the edges
+                Debug.WriteLine("| True");
                 return true;
             }
 

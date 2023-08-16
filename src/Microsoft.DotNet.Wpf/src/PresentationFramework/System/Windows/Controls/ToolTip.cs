@@ -35,6 +35,7 @@ namespace System.Windows.Controls
 
         static ToolTip()
         {
+            // Debug.WriteLine("static ToolTip()");
             DefaultStyleKeyProperty.OverrideMetadata(typeof(ToolTip), new FrameworkPropertyMetadata(typeof(ToolTip)));
             _dType = DependencyObjectType.FromSystemTypeInternal(typeof(ToolTip));
             BackgroundProperty.OverrideMetadata(typeof(ToolTip), new FrameworkPropertyMetadata(SystemColors.InfoBrush));
@@ -165,6 +166,7 @@ namespace System.Windows.Controls
 
         private static void OnIsOpenChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
+            // Debug.Write($"TT.OnIsOpenChanged() | NewValue : {(bool)e.NewValue} | ToolTipClosed ListenerExists == {AutomationPeer.ListenerExists(AutomationEvents.ToolTipClosed)} ");
             ToolTip t = (ToolTip) d;
 
             if ((bool)e.NewValue)
@@ -181,9 +183,13 @@ namespace System.Windows.Controls
                 {
                     AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(t);
                     if (peer != null)
+                    {
+                        // Debug.WriteLine("| peer != null");
                         peer.RaiseAutomationEvent(AutomationEvents.ToolTipClosed);
+                    }
                 }
             }
+            // Debug.Write("\n");
 
             OnVisualStatePropertyChanged(d, e);
         }
@@ -389,6 +395,7 @@ namespace System.Windows.Controls
         /// <param name="e">Generic routed event arguments.</param>
         protected virtual void OnOpened(RoutedEventArgs e)
         {
+            // Debug.WriteLine("OnOpened()");
             RaiseEvent(e);
         }
 
@@ -420,6 +427,7 @@ namespace System.Windows.Controls
         /// <param name="e">Generic routed event arguments.</param>
         protected virtual void OnClosed(RoutedEventArgs e)
         {
+            // Debug.WriteLine("TT.OnClosed()");
             RaiseEvent(e);
         }
 
@@ -463,6 +471,7 @@ namespace System.Windows.Controls
         /// <param name="oldParent"></param>
         protected internal override void OnVisualParentChanged(DependencyObject oldParent)
         {
+            // Debug.WriteLine("TT.OnVisualParentChanged()");
             base.OnVisualParentChanged(oldParent);
 
             if (!Popup.IsRootedInPopup(_parentPopup, this))
@@ -473,6 +482,7 @@ namespace System.Windows.Controls
 
         internal override void OnAncestorChanged()
         {
+            // Debug.WriteLine("TT.OnAncestorChanged()");
             base.OnAncestorChanged();
 
             if (!Popup.IsRootedInPopup(_parentPopup, this))
@@ -488,6 +498,7 @@ namespace System.Windows.Controls
         protected override void OnContentChanged(object oldContent, object newContent)
         {
             PopupControlService popupControlService = PopupControlService.Current;
+            // Debug.WriteLine($"TT.OnContentChanged() | {(this == popupControlService.CurrentToolTip)}");
 
             // Whenever the tooltip for a control is not an instance of a ToolTip, the framework creates a wrapper 
             // ToolTip instance. Such a ToolTip is tagged ServiceOwned and its Content property is bound to the 
@@ -539,6 +550,7 @@ namespace System.Windows.Controls
 
         internal void ForceClose()
         {
+            // Debug.WriteLine($"TT.ForceClose() | _parentPopup != {_parentPopup != null}");
             if (_parentPopup != null)
             {
                 _parentPopup.ForceClose();
@@ -547,17 +559,20 @@ namespace System.Windows.Controls
 
         private void OnPopupCouldClose(object sender, EventArgs e)
         {
+            // Debug.WriteLine("TT.OnPopupCouldClose()");
             SetCurrentValueInternal(IsOpenProperty, BooleanBoxes.FalseBox);
         }
 
         private void OnPopupOpened(object source, EventArgs e)
         {
+            // Debug.Write($"TT.OnPopupOpened() | ToolTipOpened ListenerExists == {AutomationPeer.ListenerExists(AutomationEvents.ToolTipOpened)} ");
             // Raise Accessibility event
             if (AutomationPeer.ListenerExists(AutomationEvents.ToolTipOpened))
             {
                 AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(this);
                 if (peer != null)
                 {
+                    // Debug.WriteLine("| peer != null");
                     // We raise the event async to allow PopupRoot to hookup
                     Dispatcher.BeginInvoke(DispatcherPriority.Input, new DispatcherOperationCallback(delegate(object param)
                     {
@@ -566,12 +581,13 @@ namespace System.Windows.Controls
                     }), null);
                 }
             }
-
+            // Debug.Write("\n");
             OnOpened(new RoutedEventArgs(OpenedEvent, this));
         }
 
         private void OnPopupClosed(object source, EventArgs e)
         {
+            // Debug.WriteLine("TT.OnPopupClosed()");
             OnClosed(new RoutedEventArgs(ClosedEvent, this));
         }
 
@@ -579,12 +595,16 @@ namespace System.Windows.Controls
         // used by PopupControlService while building the SafeArea
         internal Rect GetScreenRect()
         {
+            Debug.Write($"TT.GetScreenRect() | _parentPopup != {_parentPopup != null} | ");
             if (_parentPopup != null)
             {
+                Rect r = _parentPopup.GetWindowRect();
+                Debug.WriteLine($"Rect - X : {r.X} , Y : {r.Y} , Height : {r.Height} , Width : {r.Width}");
                 return _parentPopup.GetWindowRect();
             }
             else
             {
+                Debug.WriteLine("Rect.Empty");
                 return Rect.Empty;
             }
         }
