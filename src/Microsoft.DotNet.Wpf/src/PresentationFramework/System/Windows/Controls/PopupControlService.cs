@@ -155,7 +155,7 @@ namespace System.Windows.Controls
         private void OnMouseMove(IInputElement directlyOver)
         {
             Debug.WriteLine("--- Start : OnMouseMove() ---");
-            if (MouseHasLeftSafeArea())
+            if (MouseHasLeftSafeArea() && directlyOver != LastMouseDirectlyOver)
             {
                 DismissCurrentToolTip();
             }
