@@ -212,6 +212,14 @@ namespace System.Windows.Media
             }
         }
 
+        public static PixelFormat Rgba32
+        {
+            get
+            {
+                return new PixelFormat(PixelFormatEnum.Rgba32);
+            }
+        }
+
         /// <summary>
         /// Pbgra32: 32 bpp SRGB format
         /// </summary>

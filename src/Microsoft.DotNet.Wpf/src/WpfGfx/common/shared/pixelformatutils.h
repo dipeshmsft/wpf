@@ -162,6 +162,7 @@ GetPixelFormatSize(
     case MilPixelFormat::Gray32bppFloat:
     case MilPixelFormat::BGR32bpp:
     case MilPixelFormat::BGRA32bpp:
+    case MilPixelFormat::RGBA32bpp:
     case MilPixelFormat::PBGRA32bpp:
     case MilPixelFormat::CMYK32bpp:
     case MilPixelFormat::BGR32bpp101010:

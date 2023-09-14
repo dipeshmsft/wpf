@@ -197,6 +197,7 @@ namespace System.Windows.Media
                 case PixelFormatEnum.Rgb24:
                 case PixelFormatEnum.Bgr32:
                 case PixelFormatEnum.Bgra32:
+                case PixelFormatEnum.Rgba32:
                 case PixelFormatEnum.Pbgra32:
                 default:
                     Initialize(GetStandardColorSpaceProfile(), /* isStandardProfileUriNotFromUser = */ true);

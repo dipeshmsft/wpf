@@ -54,6 +54,7 @@ namespace System.Windows.Media
         Palettized              = 0x00020000,   // Pixels are indexes into a palette
         NChannelAlpha           = 0x00040000,   // N-Channel format with alpha
         IsNChannel              = 0x00080000,   // N-Channel format
+        ChannelOrderRGBA        = 0x00100000,
     }
 
     #region PixelFormat
@@ -181,6 +182,20 @@ namespace System.Windows.Media
                         break;
                     }
                 }
+
+                bool extraBuiltIn = true;
+                if(!fBuiltIn)
+                {
+                    guidWicPixelFormat = WICPixelFormatGUIDs.WICPixelFormat32bppRGBA;
+                    for(int i = 0; i < compareCount; ++i)
+                    {
+                        if(pGuidPixelFormat[i] != pGuidBuiltIn[i])
+                        {
+                            extraBuiltIn = false;
+                            break;
+                        }
+                    }
+                }
                 
                 // If it looks like a built-in WIC pixel format, verify that
                 // the format enum value is known to us.
@@ -188,12 +203,17 @@ namespace System.Windows.Media
                 {
                     _format = (PixelFormatEnum) pGuidPixelFormat[compareCount];
                 }
+                else if(!fBuiltIn && extraBuiltIn)
+                {
+                    _format = PixelFormatEnum.Rgba32;
+                }
                 else
                 {
                     _format = PixelFormatEnum.Extended;
                 }
             }
 
+            // Need to figure out what changes are needed to be done here.
             _flags = GetPixelFormatFlagsFromEnum(_format) | GetPixelFormatFlagsFromGuid(guidPixelFormat);
             _bitsPerPixel = GetBitsPerPixelFromEnum(_format);
             _guidFormat = new SecurityCriticalDataForSet<Guid> (guidPixelFormat);
@@ -398,6 +418,9 @@ namespace System.Windows.Media
 
                 case PixelFormatEnum.Bgra32:
                     return WICPixelFormatGUIDs.WICPixelFormat32bppBGRA;
+
+                case PixelFormatEnum.Rgba32:
+                    return WICPixelFormatGUIDs.WICPixelFormat32bppRGBA;
 
                 case PixelFormatEnum.Pbgra32:
                     return WICPixelFormatGUIDs.WICPixelFormat32bppPBGRA;
@@ -914,6 +937,9 @@ namespace System.Windows.Media
                     case 0x42:  // GUID_WICPixelFormat64bppRGBHalf
                         result = PixelFormatFlags.IsScRGB | PixelFormatFlags.ChannelOrderRGB;
                         break;
+                    case 0xe9:  // GUID_WIPixelFormat3bppRGBA
+                        result = PixelFormatFlags.ChannelOrderRGBA;
+                        break;
                 }
             }
 
@@ -971,6 +997,9 @@ namespace System.Windows.Media
 
                 case PixelFormatEnum.Bgra32:
                     return PixelFormatFlags.BitsPerPixel32 | PixelFormatFlags.IsSRGB | PixelFormatFlags.ChannelOrderABGR;
+
+                case PixelFormatEnum.Rgba32:
+                    return PixelFormatFlags.BitsPerPixel32 | PixelFormatFlags.IsSRGB | PixelFormatFlags.ChannelOrderRGBA;
 
                 case PixelFormatEnum.Pbgra32:
                     return PixelFormatFlags.BitsPerPixel32 | PixelFormatFlags.IsSRGB | PixelFormatFlags.Premultiplied | PixelFormatFlags.ChannelOrderABGR;
@@ -1051,6 +1080,7 @@ namespace System.Windows.Media
 
                 case PixelFormatEnum.Bgr32:
                 case PixelFormatEnum.Bgra32:
+                case PixelFormatEnum.Rgba32:
                 case PixelFormatEnum.Pbgra32:
                     return 32;
 

@@ -7066,6 +7066,7 @@ namespace System.Windows.Media
         public static System.Windows.Media.PixelFormat Rgb24 { get { throw null; } }
         public static System.Windows.Media.PixelFormat Rgb48 { get { throw null; } }
         public static System.Windows.Media.PixelFormat Rgba128Float { get { throw null; } }
+        public static System.Windows.Media.PixelFormat Rgba32 { get { throw null; } }
         public static System.Windows.Media.PixelFormat Rgba64 { get { throw null; } }
     }
     [System.ComponentModel.TypeConverterAttribute(typeof(System.Windows.Media.PointCollectionConverter))]

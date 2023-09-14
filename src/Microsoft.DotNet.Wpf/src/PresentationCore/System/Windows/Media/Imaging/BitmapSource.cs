@@ -1642,7 +1642,7 @@ namespace System.Windows.Media.Imaging
         /// List of supported DUCE formats
         /// NOTE: Please add formats in increasing bpp order
         private readonly static PixelFormat[] s_supportedDUCEFormats =
-            new PixelFormat[13]
+            new PixelFormat[14]
             {
                 PixelFormats.Indexed1,
                 PixelFormats.BlackWhite,
@@ -1656,6 +1656,7 @@ namespace System.Windows.Media.Imaging
                 PixelFormats.Bgr565,
                 PixelFormats.Bgr32,
                 PixelFormats.Bgra32,
+                PixelFormats.Rgba32,
                 PixelFormats.Pbgra32
             };
 

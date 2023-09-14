@@ -250,6 +250,11 @@ BEGIN_MILENUM( MilPixelFormat )
     //
     // 32bpp format
     //
+    RGBA32bpp = 0xE9,
+
+    //
+    // 32bpp format
+    //
     PBGRA32bpp = 0x10,
 
     //

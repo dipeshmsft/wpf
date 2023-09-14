@@ -108,12 +108,16 @@ inline bool WicPfIsMil(REFWICPixelFormatGUID wicPf)
     // (radum): this check is an unfortunate legacy side effect. While most extended pixel formats
     // are stored in GUIDS, there are still a number of areas in the code which expect them in enums,
     // and for time reasons they could not be changed. (Task# 53609)
-    if (static_cast<MilPixelFormat::Enum>(wicPf.Data4[7]) > MilPixelFormat::CMYK32bpp)
+    if (static_cast<MilPixelFormat::Enum>(wicPf.Data4[7]) > MilPixelFormat::RGBA32bpp)
     {
         return false;
     }
 
     if (0 == memcmp(&wicPf, &GUID_WICPixelFormatDontCare, sizeof(WICPixelFormatGUID) - 1))
+    {
+        return true;
+    }
+    else if (0 == memcmp(&wicPf, &GUID_WICPixelFormat32bppRGBA, sizeof(WICPixelFormatGUID)))
     {
         return true;
     }

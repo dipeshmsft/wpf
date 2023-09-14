@@ -1000,6 +1000,7 @@
 
                 <Field Name="BGR32bpp" Value="0x0E" Comment="32bpp format" />
                 <Field Name="BGRA32bpp" Value="0x0F" Comment="32bpp format" />
+                <Field Name="RGBA32bpp" Value="0xE9" Comment="32bpp format" />
                 <Field Name="PBGRA32bpp" Value="0x10" Comment="32bpp format" />
                 <Field Name="Gray32bppFloat" Value="0x11" Comment="32bpp format" />
 

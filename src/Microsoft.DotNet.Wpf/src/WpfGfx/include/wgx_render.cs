@@ -171,6 +171,11 @@ namespace MS.Internal
         Bgra32      = 0xF,
 
         /// <summary>
+        /// Rgba32: 32 bpp SRGB format
+        /// </summary>
+        Rgba32 = 0xE9,
+
+        /// <summary>
         /// Pbgra32: 32 bpp SRGB format
         /// </summary>
         Pbgra32     = 0x10,

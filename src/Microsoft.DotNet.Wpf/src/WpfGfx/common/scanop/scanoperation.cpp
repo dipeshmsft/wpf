@@ -82,6 +82,7 @@ MilPixelFormat::Enum GetNearestInterchangeFormat(MilPixelFormat::Enum fmt)
     case MilPixelFormat::RGB24bpp:
     case MilPixelFormat::BGR32bpp:
     case MilPixelFormat::BGRA32bpp:
+    case MilPixelFormat::RGBA32bpp:
     case MilPixelFormat::PBGRA32bpp:
         fmtRet = MilPixelFormat::BGRA32bpp;
         break;
