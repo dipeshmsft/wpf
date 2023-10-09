@@ -155,7 +155,7 @@ namespace System.Windows.Controls
         private void OnMouseMove(IInputElement directlyOver)
         {
             Debug.WriteLine("--- Start : OnMouseMove() ---");
-            if (MouseHasLeftSafeArea() && directlyOver != LastMouseDirectlyOver)
+            if (MouseHasLeftSafeArea())
             {
                 DismissCurrentToolTip();
             }
@@ -955,8 +955,14 @@ namespace System.Windows.Controls
                     if ((ownerUIE = owner as UIElement) != null)
                     {
                         Debug.WriteLine("> owner is UIElement");
+
                         // tooltip is owned by a UIElement.
                         Rect rectElement = new Rect(new Point(0, 0), ownerUIE.RenderSize);
+
+                        // adjust the render size using the margins
+                        Rect hitTestBound = ownerUIE.GetHitTestBounds();
+                        if(hitTestBound != rectElement) rectElement = hitTestBound;
+
                         Rect rectRoot = PointUtil.ElementToRoot(rectElement, ownerUIE, presentationSource);
                         Rect ownerRect = PointUtil.RootToClient(rectRoot, presentationSource);
 
@@ -1007,6 +1013,10 @@ namespace System.Windows.Controls
                     Rect screenRect = tooltip.GetScreenRect();
                     Point clientPt = PointUtil.ScreenToClient(screenRect.Location, presentationSource);
                     Rect tooltipRect = new Rect(clientPt, screenRect.Size);
+
+                    // add the pointer rect ??
+                    //     - This will not work. As any above point in 
+                    //          the screen ( i.e point above in the ellipse will not work.)
 
                     if (!tooltipRect.IsEmpty)
                     {
