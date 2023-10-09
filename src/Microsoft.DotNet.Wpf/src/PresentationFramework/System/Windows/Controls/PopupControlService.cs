@@ -958,15 +958,20 @@ namespace System.Windows.Controls
 
                         // tooltip is owned by a UIElement.
                         Rect rectElement = new Rect(new Point(0, 0), ownerUIE.RenderSize);
+                        Debug.WriteLine($"rectElement : {rectElement.X} {rectElement.Y} {rectElement.Width} {rectElement.Height}");
 
                         // adjust the render size using the margins
-                        Rect hitTestBound = ownerUIE.GetHitTestBounds();
-                        if(hitTestBound != rectElement) rectElement = hitTestBound;
+                        Rect hitTestBound = ownerUIE.GetHitTestBoundsForTooltip();
+                        if(hitTestBound != rectElement)
+                        {
+                            Debug.Write($"hitTestBound != rectElement |");
+                            Debug.WriteLine($" hitTestBound : {hitTestBound.X} {hitTestBound.Y} {hitTestBound.Width} {hitTestBound.Height}");
+                            rectElement = hitTestBound;
+                        }
 
                         Rect rectRoot = PointUtil.ElementToRoot(rectElement, ownerUIE, presentationSource);
                         Rect ownerRect = PointUtil.RootToClient(rectRoot, presentationSource);
 
-                        Debug.WriteLine($"rectElement : {rectElement.X} {rectElement.Y} {rectElement.Width} {rectElement.Height}");
                         Debug.WriteLine($"rectRoot : {rectRoot.X} {rectRoot.Y} {rectRoot.Width} {rectRoot.Height}");
 
                         if (!ownerRect.IsEmpty)

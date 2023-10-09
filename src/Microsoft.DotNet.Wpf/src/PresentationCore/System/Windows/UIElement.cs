@@ -306,6 +306,7 @@ namespace System.Windows
 
 
                 ArrangeDirty = true;
+                _recalculateHitBoundsCache = true;
             }
         }
 
@@ -1316,6 +1317,7 @@ namespace System.Windows
             set
             {
                 _size = value;
+                _recalculateHitBoundsCache = true;
                 InvalidateHitTestBounds();
             }
         }
@@ -1339,6 +1341,20 @@ namespace System.Windows
             }
 
             return hitBounds;
+        }
+
+        internal Rect GetHitTestBoundsForTooltip()
+        {
+            if (!_recalculateHitBoundsCache)
+            {
+                return _cachedHitBounds;
+            }
+
+            Debug.WriteLine("Recalculating hit test bounds cache.");
+            _cachedHitBounds = GetHitTestBounds();
+            _recalculateHitBoundsCache = false;
+
+            return _cachedHitBounds;
         }
 
         /// <summary>
@@ -4678,6 +4694,9 @@ namespace System.Windows
 
         private Rect _finalRect;
         private Size _desiredSize;
+        private Rect _cachedHitBounds;
+        private bool _recalculateHitBoundsCache=true;
+
         private Size _previousAvailableSize;
         private IDrawingContent _drawingContent;
 
