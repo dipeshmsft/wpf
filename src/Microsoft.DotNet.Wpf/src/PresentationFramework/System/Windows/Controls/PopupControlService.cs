@@ -155,7 +155,7 @@ namespace System.Windows.Controls
         private void OnMouseMove(IInputElement directlyOver)
         {
             Debug.WriteLine("--- Start : OnMouseMove() ---");
-            if (MouseHasLeftSafeArea())
+            if (MouseIsNotOverOwner(directlyOver) && MouseHasLeftSafeArea())
             {
                 DismissCurrentToolTip();
             }
@@ -913,6 +913,28 @@ namespace System.Windows.Controls
             return t?.GetValue(OwnerProperty) as DependencyObject;
         }
 
+        private bool MouseIsNotOverOwner(IInputElement directlyOver)
+        {
+            DependencyObject owner = FindToolTipOwner(directlyOver, ToolTipService.TriggerAction.Mouse);
+            Debug.WriteLine($"MouseIsNotOver() | owner != null : {owner != null} ");
+            if (owner != null)
+            {
+                PresentationSource presentationSource = (owner != null) ? PresentationSource.CriticalFromVisual(owner) : null;
+                if (presentationSource != null)
+                {
+                    // add the owner rect(s)
+                    UIElement ownerUIE;
+                    // ContentElement ownerCE;
+
+                    if ((ownerUIE = owner as UIElement) != null)
+                    {
+                        return !ownerUIE.IsMouseOver;
+                    }
+                }
+            }
+            return true;
+        }        
+
         // a pending request is represented by a sentinel ToolTip object that carries
         // the owner and the trigger action (only).  There's never more than one
         // pending request, so we reuse the same sentinel object.
@@ -960,9 +982,6 @@ namespace System.Windows.Controls
                         Rect rectElement = new Rect(new Point(0, 0), ownerUIE.RenderSize);
 
                         // adjust the render size using the margins
-                        Rect hitTestBound = ownerUIE.GetHitTestBounds();
-                        if(hitTestBound != rectElement) rectElement = hitTestBound;
-
                         Rect rectRoot = PointUtil.ElementToRoot(rectElement, ownerUIE, presentationSource);
                         Rect ownerRect = PointUtil.RootToClient(rectRoot, presentationSource);
 
