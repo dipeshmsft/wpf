@@ -233,6 +233,9 @@ internal static class ThemeManager
                 string s when s.Contains("hc1") => "hc1.xaml",
                 _ => "hc2.xaml"
             };
+
+            // Overriding above theme selection for hc1 to allow combining the files
+            themeColorFileName = "hc1.xaml";
         }
 
         return new Uri("pack://application:,,,/PresentationFramework.Fluent;component/Resources/Theme/" + themeColorFileName, UriKind.Absolute);
