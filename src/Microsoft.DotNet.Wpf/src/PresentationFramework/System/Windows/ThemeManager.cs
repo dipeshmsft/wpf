@@ -8,25 +8,30 @@ using System.Windows.Interop;
 
 namespace System.Windows;
 
-internal static class ThemeManager
+internal static partial class ThemeManager
 {
 
     #region Constructor
 
     static ThemeManager()
     {
-        // TODO : Temprorary way of checking if setting Fluent theme enabled flag. Provide a property for theme switch.
-        if (Application.Current != null)
+        _fluentEnabledWindows = new List<Window>();
+
+        bool resourcesFound = FindFluentThemeAndColorResourceInApp(out ResourceDictionary themeDictionary, out ResourceDictionary colorDictionary);
+
+        if(themeDictionary == null) return;
+
+        if(!resourcesFound)
         {
-            foreach (ResourceDictionary mergedDictionary in Application.Current.Resources.MergedDictionaries)
-            {
-                if (mergedDictionary.Source != null && mergedDictionary.Source.ToString().EndsWith("Fluent.xaml"))
-                {
-                    _isFluentThemeEnabled = true;
-                    break;
-                }
-            }
+            Application.Current.Theme = "Fluent";
         }
+        else
+        {
+            Application.Current.Theme = GetApplicationThemeFromColorDictionary(colorDictionary);
+        }
+
+        _isFluentThemeEnabled = true;
+        _isFluentThemeInitialized = true;
     }
 
     #endregion
@@ -46,6 +51,8 @@ internal static class ThemeManager
             DwmColorization.UpdateAccentColors();
             _isFluentThemeInitialized = true;
         }
+
+        _fluentEnabledWindows = new List<Window>();
     }
 
     /// <summary>
@@ -249,4 +256,385 @@ internal static class ThemeManager
     private static bool _isFluentThemeInitialized = false;
 
     #endregion
+}
+
+
+internal static partial class ThemeManager
+{
+    internal static void OnSystemThemeChanged()
+    {
+        if(SystemParameters.HighContrast)
+        {
+            ApplyFluentThemeOnApplication("HC", true);
+            foreach(Window window in _fluentEnabledWindows)
+            {
+                ApplyFluentThemeOnWindow(window, "HC", true);
+            }
+        }
+        else
+        {
+            if(Application.Current != null && Application.Current.Theme == "Fluent")
+            {
+                ApplyFluentThemeOnApplication("System", true);
+            }
+            // OnApplicationThemeChanged(null, Application.Current.Theme);
+            foreach(Window window in _fluentEnabledWindows)
+            {
+                // OnWindowThemeChanged(window, null, window.Theme);
+                if(window.Theme == "Fluent")
+                {
+                    ApplyFluentThemeOnWindow(window, "System", false);
+                }
+            }
+        }
+    }
+
+    internal static void OnApplicationThemeChanged(string oldTheme, string newTheme)
+    {
+        switch (newTheme)
+        {
+            case "Fluent.Light":
+                ApplyFluentThemeOnApplication("Light", true);
+                break;
+            case "Fluent.Dark":
+                ApplyFluentThemeOnApplication("Dark", true);
+                break;
+            case "Fluent.HC":
+                ApplyFluentThemeOnApplication("HC", true);
+                break;
+            case "Fluent":
+                ApplyFluentThemeOnApplication("System", true);
+                break;
+            default:
+                RemoveFluentThemeOnApplication();
+                break;
+        }
+    }
+
+    internal static void OnWindowThemeChanged(Window window, string oldTheme, string newTheme)
+    {
+        switch (newTheme)
+        {
+            case "Fluent.Light":
+                ApplyFluentThemeOnWindow(window, "Light", true);
+                break;
+            case "Fluent.Dark":
+                ApplyFluentThemeOnWindow(window, "Dark", true);
+                break;
+            case "Fluent.HC":
+                ApplyFluentThemeOnWindow(window, "HC", true);
+                break;
+            case "Fluent":
+                ApplyFluentThemeOnWindow(window, "System", true);
+                break;
+            default:
+                RemoveFluentThemeOnWindow(window);
+                break;
+        }
+    }
+
+    private static void ApplyFluentThemeOnApplication(string theme, bool forceUpdate)
+    {
+        string requestedTheme = theme == "System" ? GetSystemTheme2() : theme;
+
+        if(!_isFluentThemeInitialized)
+        {
+            InitializeFluentTheme2();
+        }
+
+        ApplyTheme2(requestedTheme, DwmColorization.GetSystemAccentColor(), forceUpdate);
+
+        _isFluentThemeEnabled = true;
+    }
+
+    private static void RemoveFluentThemeOnApplication()
+    {
+        if(!IsFluentThemeEnabled)
+        {
+            return;
+        }
+
+        foreach (Window window in Application.Current.Windows)
+        {
+            if(window == null)
+            {
+                continue;
+            }
+
+            SetImmersiveDarkMode(window, false);
+            WindowBackdropManager.SetBackdrop(window, WindowBackdropType.None);
+        }
+
+        FindFluentThemeAndColorResourceInApp(out ResourceDictionary themeDictionary, out ResourceDictionary colorDictionary);
+        Application.Current.Resources.MergedDictionaries.Remove(themeDictionary);
+        Application.Current.Resources.MergedDictionaries.Remove(colorDictionary);
+
+        _isFluentThemeEnabled = false;
+        _isFluentThemeInitialized = false;
+    }
+
+    private static void ApplyFluentThemeOnWindow(Window window, string theme, bool forceUpdate)
+    {
+        string requestedTheme = theme == "System" ? GetSystemTheme2() : theme;
+
+        if(!window.IsFluentThemeInitialized)
+        {
+            InitializeFluentTheme2(window);
+        }
+
+        ApplyTheme2(window, requestedTheme, DwmColorization.GetSystemAccentColor(), forceUpdate);
+
+        if(!window.IsFluentThemeEnabled)
+        {
+            window.IsFluentThemeEnabled = true;
+            _fluentEnabledWindows.Add(window);
+        }
+    }
+
+    private static void RemoveFluentThemeOnWindow(Window window)
+    {
+        if(!window.IsFluentThemeEnabled)
+        {
+            return;
+        }
+
+        SetImmersiveDarkMode(window, false);
+        WindowBackdropManager.SetBackdrop(window, WindowBackdropType.None);
+
+        FindFluentThemeAndColorResourceInWindow(window, out ResourceDictionary themeDictionary, out ResourceDictionary colorDictionary);
+        window.Resources.MergedDictionaries.Remove(themeDictionary);
+        window.Resources.MergedDictionaries.Remove(colorDictionary);
+
+        window.IsFluentThemeEnabled = false;
+        _fluentEnabledWindows.Remove(window);
+    }
+
+    private static void ApplyTheme2(string requestedTheme, Color requestedAccentColor, bool forceUpdate = false)
+    {
+        if(Application.Current == null)
+        {
+            return;
+        }
+
+        if (forceUpdate || requestedTheme != _currentApplicationTheme || requestedAccentColor != DwmColorization.CurrentApplicationAccentColor)
+        {
+            DwmColorization.UpdateAccentColors(requestedTheme);
+
+            Uri dictionaryUri = GetFluentWindowThemeColorResourceUri(requestedTheme);
+            AddOrUpdateThemeResources(dictionaryUri);
+
+            var windows = Application.Current.Windows;
+            foreach (Window window in windows)
+            {
+                if (window == null || window.Theme != "Fluent")
+                {
+                    continue;
+                }
+
+                bool requestedUseLightMode = requestedTheme == "Light";
+                SetImmersiveDarkMode(window, !requestedUseLightMode);
+                WindowBackdropManager.SetBackdrop(window, SystemParameters.HighContrast ? WindowBackdropType.None : WindowBackdropType.MainWindow);
+            }
+
+            _currentApplicationTheme = requestedTheme;
+        }
+    }
+
+    private static void ApplyTheme2(Window window, string requestedTheme, Color requestedAccentColor, bool forceUpdate = false)
+    {
+        if (forceUpdate || requestedTheme != window._currentWindowTheme || requestedAccentColor != DwmColorization.CurrentApplicationAccentColor)
+        {
+            DwmColorization.UpdateAccentColors(window, requestedTheme);
+
+            Uri dictionaryUri = GetFluentWindowThemeColorResourceUri(requestedTheme);
+            AddOrUpdateThemeResources(window, dictionaryUri);
+
+            bool requestedUseLightMode = requestedTheme == "Light";
+            SetImmersiveDarkMode(window, !requestedUseLightMode);
+            WindowBackdropManager.SetBackdrop(window, SystemParameters.HighContrast ? WindowBackdropType.None : WindowBackdropType.MainWindow);
+        
+            window._currentWindowTheme = requestedTheme;
+        }
+    }
+
+    private static Uri GetFluentWindowThemeColorResourceUri(string requestedTheme)
+    {
+        string themeColorFileName = requestedTheme.ToLower() + ".xaml";
+
+        if (SystemParameters.HighContrast)
+        {
+            themeColorFileName = "hc.xaml";
+        }
+
+        return new Uri("pack://application:,,,/PresentationFramework.Fluent;component/Resources/Theme/" + themeColorFileName, UriKind.Absolute);
+    }
+
+    private static string GetSystemTheme2()
+    {
+        if(SystemParameters.HighContrast)
+        {
+            return "HC";
+        }
+
+        return IsSystemThemeLight() ? "Light" : "Dark";
+    }
+
+    internal static void InitializeFluentTheme2()
+    {
+        if(!_isFluentThemeInitialized)
+        {
+            FindFluentThemeAndColorResourceInApp(out ResourceDictionary themeDictionary, out ResourceDictionary colorDictionary);
+
+            if(themeDictionary == null)
+            {
+                Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri(themeDictionarySource, UriKind.Absolute) });
+            }
+
+            if(colorDictionary == null)
+            {
+                _currentApplicationTheme = GetSystemTheme2();
+                var themeColorResourceUri = GetFluentWindowThemeColorResourceUri(_currentApplicationTheme);
+
+                Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = themeColorResourceUri });
+            }
+
+            _isFluentThemeInitialized = true;
+        }
+    }
+
+    internal static void InitializeFluentTheme2(Window window)
+    {
+        if(!window.IsFluentThemeInitialized)
+        {
+            FindFluentThemeAndColorResourceInWindow(window, out ResourceDictionary themeDictionary, out ResourceDictionary colorDictionary);
+
+            if(themeDictionary == null)
+            {
+                window.Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri(themeDictionarySource, UriKind.Absolute) });
+            }
+
+            if(colorDictionary == null)
+            {
+                _currentApplicationTheme = GetSystemTheme2();
+                var themeColorResourceUri = GetFluentWindowThemeColorResourceUri(_currentApplicationTheme);
+
+                window.Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = themeColorResourceUri });
+            }
+
+            window.IsFluentThemeInitialized = true;
+        }
+    }
+
+    private static bool FindFluentThemeAndColorResourceInApp(out ResourceDictionary themeDicitonary, out ResourceDictionary colorDictionary)
+    {
+        themeDicitonary = null;
+        colorDictionary = null;
+
+        foreach (ResourceDictionary mergedDictionary in Application.Current.Resources.MergedDictionaries)
+        {
+            if (mergedDictionary.Source != null)
+            {
+                var source = mergedDictionary.Source.ToString();
+                if (source.EndsWith("Fluent.xaml"))
+                {
+                    themeDicitonary = mergedDictionary;
+                }
+                else if (source.EndsWith("Light.xaml") || source.EndsWith("Dark.xaml") || source.EndsWith("HC.xaml"))
+                {
+                    colorDictionary = mergedDictionary;
+                }
+            }
+        }
+
+        return themeDicitonary != null && colorDictionary != null;
+    }
+
+    private static bool FindFluentThemeAndColorResourceInWindow(Window window, out ResourceDictionary themeDicitonary, out ResourceDictionary colorDictionary)
+    {
+        themeDicitonary = null;
+        colorDictionary = null;
+
+        foreach (ResourceDictionary mergedDictionary in window.Resources.MergedDictionaries)
+        {
+            if (mergedDictionary.Source != null)
+            {
+                var source = mergedDictionary.Source.ToString();
+                if (source.EndsWith("Fluent.xaml"))
+                {
+                    themeDicitonary = mergedDictionary;
+                }
+                else if (source.EndsWith("Light.xaml") || source.EndsWith("Dark.xaml") || source.EndsWith("HC.xaml"))
+                {
+                    colorDictionary = mergedDictionary;
+                }
+            }
+        }
+
+        return themeDicitonary != null && colorDictionary != null;
+    }
+
+    private static string GetApplicationThemeFromColorDictionary(ResourceDictionary colorDictionary)
+    {
+        if(colorDictionary == null)
+        {
+            return "";
+        }
+
+        var colorSource = colorDictionary.Source.ToString();
+
+        if (colorSource.EndsWith("Light.xaml"))
+        {
+            return "Fluent.Light";
+        }
+        else if (colorSource.EndsWith("Dark.xaml"))
+        {
+            return "Fluent.Dark";
+        }
+        else if (colorSource.EndsWith("HC.xaml"))
+        {
+            return "Fluent.HC";
+        }
+        else
+        {
+            return "";
+        }
+    }
+
+    private static void AddOrUpdateThemeResources(Window window, Uri dictionaryUri)
+    {
+        if(window == null || dictionaryUri == null)
+        {
+            return;
+        }
+
+        var newDictionary = new ResourceDictionary() { Source = dictionaryUri };
+
+        ResourceDictionary currentDictionary = window.Resources;
+        
+        FindFluentThemeAndColorResourceInWindow(window, out _, out ResourceDictionary colorDictionary);
+
+        // currentDictionary.MergedDictionaries.Remove(colorDictionary);
+        // currentDictionary.MergedDictionaries.Add(newDictionary);
+        
+        foreach (var key in newDictionary.Keys)
+        {
+            if (currentDictionary.Contains(key))
+            {
+                currentDictionary[key] = newDictionary[key];
+            }
+            else
+            {
+                currentDictionary.Add(key, newDictionary[key]);
+            }
+        }
+    }
+
+    internal static bool IsFluentEnabledOnAnyWindow()
+    {
+        return _fluentEnabledWindows.Count > 0;
+    }
+
+    private static string themeDictionarySource = "pack://application:,,,/PresentationFramework.Fluent;component/Resources/Fluent.xaml";
+
+    private static ICollection<Window> _fluentEnabledWindows;
 }

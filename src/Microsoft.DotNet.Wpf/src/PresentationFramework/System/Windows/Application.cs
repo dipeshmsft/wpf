@@ -878,6 +878,25 @@ namespace System.Windows
             }
         }
 
+        [Ambient]
+        public string Theme
+        {
+            get
+            {
+                return _applicationTheme;
+            }
+            set
+            {
+                VerifyAccess();
+                if(_applicationTheme != value)
+                {
+                    string oldTheme = _applicationTheme;
+                    _applicationTheme = value;
+                    ThemeManager.OnApplicationThemeChanged(oldTheme, value);
+                }
+            }
+        }
+
         /// <summary>
         ///     Current locally defined Resources
         /// </summary>
@@ -2411,6 +2430,7 @@ namespace System.Windows
         static private bool                             _appCreatedInThisAppDomain;
         static private Application                      _appInstance;
         static private Assembly                         _resourceAssembly;
+        static private string                           _applicationTheme = "";
 
         // Keep LoadBamlSyncInfo stack so that the Outer LoadBaml and Inner LoadBaml( ) for the same
         // Uri share the related information.

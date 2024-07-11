@@ -996,6 +996,78 @@ namespace System.Windows
             }
         }
 
+        public static readonly DependencyProperty ThemeProperty =
+                DependencyProperty.Register("Theme", typeof(string), typeof(Window),
+                        new FrameworkPropertyMetadata(
+                                "",
+                                new PropertyChangedCallback(_OnThemeChanged),
+                                new CoerceValueCallback(CoerceTheme)));
+
+        private static void _OnThemeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            ((Window)d).OnThemeChanged((string)e.OldValue, (string)e.NewValue);
+        }
+
+        private void OnThemeChanged(string oldValue, string newValue)
+        {
+
+            if((newValue.Contains("Fluent") || ThemeManager.IsFluentThemeEnabled) && WindowBackdropManager.IsBackdropEnabled)
+            {
+                SetResourceReference(StyleProperty, typeof(Window));
+            }
+            else
+            {
+                SetResourceReference(StyleProperty, "BackdropDisabledWindowStyle");
+            }
+
+            if(oldValue != newValue)
+            {
+                ThemeManager.OnWindowThemeChanged(this, oldValue, newValue);
+            }
+        }
+
+        internal bool IsFluentThemeEnabled { get; set;}
+        internal bool IsFluentThemeInitialized  { get; set;}
+
+        internal string _currentWindowTheme = "";
+
+        private static object CoerceTheme(DependencyObject d, object value)
+        {
+            // value = VerifyAccessCoercion(d, value);
+
+            // if (!((Window) d).IsSourceWindowNull)
+            // {
+            //     throw new InvalidOperationException(SR.ChangeNotAllowedAfterShow);
+            // }
+
+            return value;
+        }
+
+        public string Theme
+        {
+            get
+            {
+                VerifyContextAndObjectState();
+
+                // this call ends up throwing an exception if accessing
+                // Theme is not allowed
+                VerifyApiSupported();
+
+                return (string)GetValue(ThemeProperty);
+            }
+            set
+            {
+                VerifyContextAndObjectState();
+
+                // this call ends up throwing an exception if accessing
+                // Theme is not allowed
+                VerifyApiSupported();
+
+                SetValue(ThemeProperty, value);
+            }
+        }
+
+
         /// <summary>
         ///     This property returns the restoring rectangle of the window.  This information
         ///     can be used to track a users size and position preferences when the
@@ -2515,10 +2587,19 @@ namespace System.Windows
                 UnsafeNativeMethods.ChangeWindowMessageFilterEx(_swh.CriticalHandle, WindowMessage.WM_COMMAND, MSGFLT.ALLOW, out info);
             }
 
-            if (Standard.Utility.IsOSWindows11OrNewer && ThemeManager.IsFluentThemeEnabled)
+            if (Standard.Utility.IsOSWindows11OrNewer && (ThemeManager.IsFluentThemeEnabled || this.IsFluentThemeEnabled))
             {
-                ThemeManager.InitializeFluentTheme();
-                ThemeManager.ApplySystemTheme(this, true);
+                if(ThemeManager.IsFluentThemeEnabled)
+                {
+                    ThemeManager.InitializeFluentTheme2();
+                    ThemeManager.OnApplicationThemeChanged(null, Application.Current.Theme);
+                }
+                
+                if(this.IsFluentThemeEnabled)
+                {
+                    ThemeManager.InitializeFluentTheme2(this);
+                    ThemeManager.OnWindowThemeChanged(this, null, this.Theme);
+                }
             }
 
             // Sub classes can have different intialization. RBW does very minimalistic
@@ -3580,18 +3661,18 @@ namespace System.Windows
                 }
             }
 
-            // TODO : Remove when Fluent theme is enabled by default
-            if (ThemeManager.IsFluentThemeEnabled)
-            {
-                if(WindowBackdropManager.IsBackdropEnabled)
-                {
-                    SetResourceReference(StyleProperty, typeof(Window));
-                }
-                else
-                {
-                    SetResourceReference(StyleProperty, "BackdropDisabledWindowStyle");
-                }
-            }
+            // // TODO : Remove when Fluent theme is enabled by default
+            // if (ThemeManager.IsFluentThemeEnabled || this.Theme.Contains("Fluent"))
+            // {
+            //     if(WindowBackdropManager.IsBackdropEnabled)
+            //     {
+            //         SetResourceReference(StyleProperty, typeof(Window));
+            //     }
+            //     else
+            //     {
+            //         SetResourceReference(StyleProperty, "BackdropDisabledWindowStyle");
+            //     }
+            // }
         }
 
 

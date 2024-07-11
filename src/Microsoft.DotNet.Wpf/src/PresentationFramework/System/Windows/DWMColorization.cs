@@ -58,7 +58,33 @@ internal static class DwmColorization
             _UISettings.TryUpdateAccentColors();
         }
 
-        if (ThemeManager.IsSystemThemeLight())
+        bool useLightModeColors = ThemeManager.IsSystemThemeLight();
+        GetAccentColorVariations(useLightModeColors, out primaryAccent, out secondaryAccent, out tertiaryAccent);
+        UpdateColorResources(useLightModeColors, systemAccent, primaryAccent, secondaryAccent, tertiaryAccent);
+        _currentApplicationAccentColor = systemAccent;
+    }
+
+    internal static void UpdateAccentColors(string requestedTheme)
+    {
+        Color systemAccent = GetSystemAccentColor();
+        bool useLightModeColors = requestedTheme == "Light";
+        GetAccentColorVariations(useLightModeColors, out Color primaryAccent, out Color secondaryAccent, out Color tertiaryAccent);
+        UpdateColorResources(useLightModeColors, systemAccent, primaryAccent, secondaryAccent, tertiaryAccent);
+        _currentApplicationAccentColor = systemAccent;
+    }
+
+    internal static void UpdateAccentColors(Window window, string requestedTheme)
+    {
+        Color systemAccent = GetSystemAccentColor();
+        bool useLightModeColors = requestedTheme == "Light";
+        GetAccentColorVariations(useLightModeColors, out Color primaryAccent, out Color secondaryAccent, out Color tertiaryAccent);
+        UpdateColorResourcesOnWindow(window, useLightModeColors, systemAccent, primaryAccent, secondaryAccent, tertiaryAccent);
+    }
+    
+
+    private static void GetAccentColorVariations(bool lightModeColors, out Color primaryAccent, out Color secondaryAccent, out Color tertiaryAccent)
+    {
+        if (lightModeColors)
         {
             // In light mode, we use darker shades of the accent color
             primaryAccent = _UISettings.AccentDark1;
@@ -72,41 +98,21 @@ internal static class DwmColorization
             secondaryAccent = _UISettings.AccentLight2;
             tertiaryAccent = _UISettings.AccentLight3;
         }
-
-        UpdateColorResources(systemAccent, primaryAccent, secondaryAccent, tertiaryAccent);
-        _currentApplicationAccentColor = systemAccent;
     }
 
     /// <summary>
     /// Updates application resources.
     /// </summary>        
     private static void UpdateColorResources(
+        bool useLightModeColors,
         Color systemAccent,
         Color primaryAccent,
         Color secondaryAccent,
         Color tertiaryAccent)
     {
-#if DEBUG
-        System.Diagnostics.Debug.WriteLine("INFO | SystemAccentColor: " + systemAccent, "System.Windows.Accent");
-        System
-            .Diagnostics
-            .Debug
-            .WriteLine("INFO | SystemAccentColorPrimary: " + primaryAccent, "System.Windows.Accent");
-        System
-            .Diagnostics
-            .Debug
-            .WriteLine("INFO | SystemAccentColorSecondary: " + secondaryAccent, "System.Windows.Accent");
-        System
-            .Diagnostics
-            .Debug
-            .WriteLine("INFO | SystemAccentColorTertiary: " + tertiaryAccent, "System.Windows.Accent");
-#endif
 
-        if (!ThemeManager.IsSystemThemeLight())
+        if (useLightModeColors)
         {
-#if DEBUG
-            System.Diagnostics.Debug.WriteLine("INFO | Text on accent is DARK", "System.Windows.Accent");
-#endif
             Application.Current.Resources["TextOnAccentFillColorPrimary"] = 
                     Color.FromArgb( 0xFF, 0x00, 0x00, 0x00);
             
@@ -124,9 +130,7 @@ internal static class DwmColorization
         }
         else
         {
-#if DEBUG
-            System.Diagnostics.Debug.WriteLine("INFO | Text on accent is LIGHT", "System.Windows.Accent");
-#endif
+
             Application.Current.Resources["TextOnAccentFillColorPrimary"] = 
                     Color.FromArgb( 0xFF, 0xFF, 0xFF, 0xFF);
             
@@ -158,6 +162,81 @@ internal static class DwmColorization
 
         Application.Current.Resources["AccentFillColorSecondaryBrush"] = ToBrush(secondaryAccent, 0.9);
         Application.Current.Resources["AccentFillColorTertiaryBrush"] = ToBrush(secondaryAccent, 0.8);
+    }
+
+
+    private static void UpdateColorResourcesOnWindow(
+        Window window,
+        bool useLightModeColors,
+        Color systemAccent,
+        Color primaryAccent,
+        Color secondaryAccent,
+        Color tertiaryAccent)
+    {
+        ResourceDictionary resources = window.Resources;
+
+        UpdateTextOnAccentColorResourcesInternal(resources, useLightModeColors);
+        UpdateAccentColorResourcesInternal(resources, systemAccent, primaryAccent, secondaryAccent, tertiaryAccent);
+    }
+
+    private static void UpdateTextOnAccentColorResourcesInternal(ResourceDictionary rd, bool useLightModeColors)
+    {
+        if (useLightModeColors)
+        {
+            rd["TextOnAccentFillColorPrimary"] = 
+                    Color.FromArgb( 0xFF, 0x00, 0x00, 0x00);
+            
+            rd["TextOnAccentFillColorSecondary"] = 
+                    Color.FromArgb( 0x80, 0x00, 0x00, 0x00);
+            
+            rd["TextOnAccentFillColorDisabled"] = 
+                    Color.FromArgb( 0x77, 0x00, 0x00, 0x00);
+            
+            rd["TextOnAccentFillColorSelectedText"] = 
+                    Color.FromArgb( 0x00, 0x00, 0x00, 0x00);
+            
+            rd["AccentTextFillColorDisabled"] = 
+                    Color.FromArgb( 0x5D, 0x00, 0x00, 0x00);
+        }
+        else
+        {
+
+            rd["TextOnAccentFillColorPrimary"] = 
+                    Color.FromArgb( 0xFF, 0xFF, 0xFF, 0xFF);
+            
+            rd["TextOnAccentFillColorSecondary"] = 
+                    Color.FromArgb( 0x80, 0xFF, 0xFF, 0xFF);
+            
+            rd["TextOnAccentFillColorDisabled"] = 
+                    Color.FromArgb( 0x87, 0xFF, 0xFF, 0xFF);
+            
+            rd["TextOnAccentFillColorSelectedText"] = 
+                    Color.FromArgb( 0xFF, 0xFF, 0xFF, 0xFF);
+            
+            rd["AccentTextFillColorDisabled"] = 
+                    Color.FromArgb( 0x5D, 0xFF, 0xFF, 0xFF);
+        }
+
+    }
+
+    private static void UpdateAccentColorResourcesInternal(ResourceDictionary rd, Color systemAccent, Color primaryAccent, Color secondaryAccent, Color tertiaryAccent)
+    {
+        rd["SystemAccentColor"] = systemAccent;
+        rd["SystemAccentColorPrimary"] = primaryAccent;
+        rd["SystemAccentColorSecondary"] = secondaryAccent;
+        rd["SystemAccentColorTertiary"] = tertiaryAccent;
+
+        rd["SystemAccentBrush"] = ToBrush(systemAccent);
+        rd["SystemFillColorAttentionBrush"] = ToBrush(secondaryAccent);
+        rd["AccentTextFillColorPrimaryBrush"] = ToBrush(tertiaryAccent);
+        rd["AccentTextFillColorSecondaryBrush"] = ToBrush(tertiaryAccent);
+        rd["AccentTextFillColorTertiaryBrush"] = ToBrush(secondaryAccent);
+        rd["AccentFillColorSelectedTextBackgroundBrush"] = ToBrush(systemAccent);
+        rd["AccentFillColorDefaultBrush"] = ToBrush(secondaryAccent);
+
+        rd["AccentFillColorSecondaryBrush"] = ToBrush(secondaryAccent, 0.9);
+        rd["AccentFillColorTertiaryBrush"] = ToBrush(secondaryAccent, 0.8);
+
     }
 
     /// <summary>
