@@ -18,7 +18,7 @@
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="clr-namespace:Fluent.Controls"
+    xmlns:fluentcontrols="clr-namespace:Fluent.Controls"
     xmlns:system="clr-namespace:System;assembly=System.Runtime">
 
 
@@ -636,7 +636,7 @@
         </Style.Triggers>
     </Style>
 
-    <controls:FallbackBrushConverter x:Key="FallbackBrushConverter" />
+    <fluentcontrols:FallbackBrushConverter x:Key="FallbackBrushConverter" />
 
     <!-- <Color x:Key="FallbackColor">#FFFF0000</Color> -->
 
