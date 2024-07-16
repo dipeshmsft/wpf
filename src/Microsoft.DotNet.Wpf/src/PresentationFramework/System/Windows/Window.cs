@@ -1278,6 +1278,33 @@ namespace System.Windows
             }
         }
 
+        public string Theme
+        {
+            get
+            {
+                VerifyContextAndObjectState();
+                return _theme;
+            }
+            set
+            {
+                VerifyContextAndObjectState();
+                if(!ThemeManager3.VerifyApplicationTheme(value))
+                {
+                    throw new ArgumentException("Invalid ApplicationTheme value. System, Light, Dark and None are the only valid values for ApplicationTheme property.");
+                }
+                string oldTheme = _theme;
+                _theme = value;
+                if(IsSourceWindowNull)
+                {
+                    _deferredThemeLoading = true;
+                }
+                else
+                {
+                    ThemeManager3.OnWindowThemeChanged(this, oldTheme, value);
+                }
+            }
+        }
+
         /// <summary>
         /// Gets Showing as dialog
         /// </summary>
@@ -2517,7 +2544,12 @@ namespace System.Windows
 
             if (Standard.Utility.IsOSWindows11OrNewer && ThemeManager3.IsFluentThemeEnabled)
             {
-                ThemeManager3.LoadDeferrredTheme();
+                ThemeManager3.LoadDeferredApplicationTheme();
+                if(_deferredThemeLoading)
+                {
+                    _deferredThemeLoading = false;
+                    ThemeManager3.OnWindowThemeChanged(this, "None", Theme);
+                }
                 ThemeManager3.ApplyStyleOnWindow(this);
             }
 
@@ -7160,6 +7192,9 @@ namespace System.Windows
         private IntPtr              _ownerHandle = IntPtr.Zero;   // no need to dispose this
         private WindowCollection    _ownedWindows;
         private ArrayList           _threadWindowHandles;
+
+        private string              _theme = "None";
+        internal bool               _deferredThemeLoading = false;
 
         private bool                _updateHwndSize     = true;
         private bool                _updateHwndLocation = true;

@@ -33,7 +33,7 @@ internal static class WindowBackdropManager
             return false;
         }
 
-        if(!ThemeManager3.IsFluentThemeEnabled)
+        if(!ThemeManager3.IsFluentThemeEnabled && window.Theme == null)
         {
             return false;
         }

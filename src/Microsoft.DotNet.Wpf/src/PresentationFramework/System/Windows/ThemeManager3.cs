@@ -27,14 +27,45 @@ public static class ThemeManager3
 
     internal static void OnSystemThemeChanged()
     {
-        if(!IsFluentThemeEnabled) return;
-
-        bool useLightColors = GetUseLightColors(Application.Current.Theme);
-        var fluentThemeResourceUri = GetFluentThemeResourceUri(useLightColors);
-        AddOrUpdateThemeResources(fluentThemeResourceUri);
-        foreach(Window window in Application.Current.Windows)
+        if(IsFluentThemeEnabled)
         {
-            ApplyStyleOnWindow(window, useLightColors);
+            bool useLightColors = GetUseLightColors(Application.Current.Theme);
+            var fluentThemeResourceUri = GetFluentThemeResourceUri(useLightColors);
+            AddOrUpdateThemeResources(fluentThemeResourceUri);
+            
+            foreach(Window window in Application.Current.Windows)
+            {
+                if(window == null) continue;
+
+                if(window.Theme == "None")
+                {
+                    ApplyStyleOnWindow(window, useLightColors);
+                    continue;
+                }
+
+                bool windowUseLightColors = GetUseLightColors(window.Theme);
+                var windowFluentThemeResourceUri = GetFluentThemeResourceUri(windowUseLightColors);
+                AddOrUpdateThemeResources(window, windowFluentThemeResourceUri);
+                ApplyStyleOnWindow(window, windowUseLightColors);
+            }
+        }
+        else
+        {
+            foreach(Window window in _fluentEnabledWindows)
+            {
+                if(window == null) continue;
+
+                if(window.Theme == "None")
+                {
+                    RemoveFluentFromWindow(window);
+                    continue;
+                }
+
+                bool windowUseLightColors = GetUseLightColors(window.Theme);
+                var windowFluentThemeResourceUri = GetFluentThemeResourceUri(windowUseLightColors);
+                AddOrUpdateThemeResources(window, windowFluentThemeResourceUri);
+                ApplyStyleOnWindow(window, windowUseLightColors);
+            }
         }
         
         // Color accentColor = AccentColorHelper.GetAccentColor();
@@ -66,6 +97,7 @@ public static class ThemeManager3
             return;
         }
 
+        // Hack to prevent resetting of the resources when the application properties are being parsed
         if(Application.Current.Windows.Count == 0)
         {
             _deferredThemeLoading = true;
@@ -77,7 +109,10 @@ public static class ThemeManager3
 
         foreach(Window window in Application.Current.Windows)
         {
-            ApplyStyleOnWindow(window, useLightColors);
+            if(!_fluentEnabledWindows.HasItem(window))
+            {
+                ApplyStyleOnWindow(window, useLightColors);
+            }
         }
 
         // _currentUseLightMode = useLightColors;
@@ -85,7 +120,34 @@ public static class ThemeManager3
         // _currentAccentColor = AccentColorHelper.GetAccentColor();
     }
 
-    internal static void LoadDeferrredTheme()
+    internal static void OnWindowThemeChanged(Window window, string oldTheme, string newTheme)
+    {
+        if(window == null) return;
+
+        if(newTheme == "None")
+        {
+            RemoveFluentFromWindow(window);
+
+            if(_fluentEnabledWindows.HasItem(window))
+            {
+                _fluentEnabledWindows.Remove(window);
+            }
+
+            return;
+        }
+
+        bool useLightColors = GetUseLightColors(newTheme);
+        var fluentThemeResourceUri = GetFluentThemeResourceUri(useLightColors);
+        AddOrUpdateThemeResources(window, fluentThemeResourceUri);
+        ApplyStyleOnWindow(window, useLightColors);
+
+        if(!_fluentEnabledWindows.HasItem(window))
+        {
+            _fluentEnabledWindows.Add(window);
+        }
+    }
+
+    internal static void LoadDeferredApplicationTheme()
     {
         if(_deferredThemeLoading)
         {
@@ -101,9 +163,13 @@ public static class ThemeManager3
 
     internal static bool ApplyStyleOnWindow(Window window)
     {
-        if(!IsFluentThemeEnabled) return false;
+        if(!IsFluentThemeEnabled && window.Theme == "None") return false;
 
         bool useLightColors = GetUseLightColors(Application.Current.Theme);
+        if(window.Theme != "None")
+        {
+            useLightColors = GetUseLightColors(window.Theme);
+        }
         ApplyStyleOnWindow(window, useLightColors);
         return true;
     }
@@ -136,6 +202,19 @@ public static class ThemeManager3
         {
             RemoveStyleOnWindow(window);
         }
+    }
+
+    private static void RemoveFluentFromWindow(Window window)
+    {
+        if(window == null) return;
+
+        FindFluentThemeResourceDictionary(window, out ResourceDictionary fluentDictionary);
+        if(fluentDictionary != null)
+        {
+            window.Resources.MergedDictionaries.Remove(fluentDictionary);
+        }
+
+        RemoveStyleOnWindow(window);
     }
 
     private static void ApplyStyleOnWindow(Window window, bool useLightColors)
@@ -220,6 +299,22 @@ public static class ThemeManager3
         Application.Current.Resources.MergedDictionaries.Add(newDictionary);
     }
 
+    private static void AddOrUpdateThemeResources(Window window, Uri dictionaryUri)
+    {
+        ArgumentNullException.ThrowIfNull(dictionaryUri, nameof(dictionaryUri));
+
+        var newDictionary = new ResourceDictionary() { Source = dictionaryUri };
+
+        FindFluentThemeResourceDictionary(window, out ResourceDictionary fluentDictionary);
+        
+        if (fluentDictionary != null)
+        {
+            window.Resources.MergedDictionaries.Remove(fluentDictionary);
+        }
+
+        window.Resources.MergedDictionaries.Add(newDictionary);
+    }
+
     private static void FindFluentThemeResourceDictionary(out ResourceDictionary fluentDictionary)
     {
         fluentDictionary = null;
@@ -231,6 +326,25 @@ public static class ThemeManager3
             if (mergedDictionary.Source != null)
             {
                 if (mergedDictionary.Source.ToString().Contains(fluentThemeResoruceDictionaryUri))
+                {
+                    fluentDictionary = mergedDictionary;
+                    break;
+                }
+            }
+        }
+    }
+
+    private static void FindFluentThemeResourceDictionary(Window window, out ResourceDictionary fluentDictionary)
+    {
+        fluentDictionary = null;
+
+        if(window == null) return;
+
+        foreach(ResourceDictionary mergedDictionary in window.Resources.MergedDictionaries)
+        {
+            if(mergedDictionary.Source != null)
+            {
+                if(mergedDictionary.Source.ToString().Contains(fluentThemeResoruceDictionaryUri))
                 {
                     fluentDictionary = mergedDictionary;
                     break;
@@ -254,6 +368,8 @@ public static class ThemeManager3
     #region Private Fields
     private static readonly string fluentThemeResoruceDictionaryUri = "pack://application:,,,/PresentationFramework.Fluent;component/Themes/";
     private static bool _deferredThemeLoading = false;
+    internal static WindowCollection _fluentEnabledWindows = new WindowCollection();
+
     // private static bool _currentUseLightMode;
     // private static bool _currentFluentThemeResourceUri;
     // private static Color _currentAccentColor;
