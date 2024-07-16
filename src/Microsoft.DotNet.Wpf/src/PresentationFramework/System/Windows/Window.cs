@@ -2515,10 +2515,10 @@ namespace System.Windows
                 UnsafeNativeMethods.ChangeWindowMessageFilterEx(_swh.CriticalHandle, WindowMessage.WM_COMMAND, MSGFLT.ALLOW, out info);
             }
 
-            if (Standard.Utility.IsOSWindows11OrNewer && ThemeManager.IsFluentThemeEnabled)
+            if (Standard.Utility.IsOSWindows11OrNewer && ThemeManager3.IsFluentThemeEnabled)
             {
-                ThemeManager.InitializeFluentTheme();
-                ThemeManager.ApplySystemTheme(this, true);
+                ThemeManager3.LoadDeferrredTheme();
+                ThemeManager3.ApplyStyleOnWindow(this);
             }
 
             // Sub classes can have different intialization. RBW does very minimalistic
@@ -3581,7 +3581,7 @@ namespace System.Windows
             }
 
             // TODO : Remove when Fluent theme is enabled by default
-            if (ThemeManager.IsFluentThemeEnabled)
+            if (ThemeManager3.IsFluentThemeEnabled)
             {
                 if(WindowBackdropManager.IsBackdropEnabled)
                 {

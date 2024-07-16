@@ -28,9 +28,10 @@ internal static class ThemeManager
                     if (dictionarySource.EndsWith("Fluent.Light.xaml", StringComparison.OrdinalIgnoreCase)
                         || dictionarySource.EndsWith("Fluent.Dark.xaml", StringComparison.OrdinalIgnoreCase)
                         || dictionarySource.EndsWith("Fluent.HC.xaml", StringComparison.OrdinalIgnoreCase))
-                    
-                    _isFluentThemeEnabled = true;
-                    break;
+                    {
+                        _isFluentThemeEnabled = true;
+                        break;
+                    }
                 }
             }
         }
@@ -136,7 +137,7 @@ internal static class ThemeManager
     /// <param name="window"></param>
     /// <param name="useDarkMode"></param>
     /// <returns></returns>
-    private static bool SetImmersiveDarkMode(Window window, bool useDarkMode)
+    internal static bool SetImmersiveDarkMode(Window window, bool useDarkMode)
     {
         if (window == null)
         {

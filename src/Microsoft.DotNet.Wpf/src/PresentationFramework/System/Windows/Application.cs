@@ -964,6 +964,25 @@ namespace System.Windows
             return (propertyName == "Resources" && _resources != null);
         }
 
+        public string Theme
+        {
+            get
+            {
+                return _theme;                
+            }
+            set
+            {
+                VerifyAccess();
+                if(!ThemeManager3.VerifyApplicationTheme(value))
+                {
+                    throw new ArgumentException("Invalid ApplicationTheme value. System, Light, Dark and None are the only valid values for ApplicationTheme property.");
+                }
+                string oldTheme = _theme;
+                _theme = value;
+                ThemeManager3.OnApplicationThemeChanged(oldTheme, _theme);
+            }
+        }
+
         // Says if App.Resources has any implicit styles
         internal bool HasImplicitStylesInResources
         {
@@ -2424,6 +2443,7 @@ namespace System.Windows
         private WindowCollection            _nonAppWindowList;
         private Window                      _mainWindow;
         private ResourceDictionary          _resources;
+        internal string                      _theme = "None";
 
         private bool                        _ownDispatcherStarted;
         private NavigationService           _navService;

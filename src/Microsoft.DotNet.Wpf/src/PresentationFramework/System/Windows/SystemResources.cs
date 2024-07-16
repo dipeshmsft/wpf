@@ -1413,10 +1413,11 @@ namespace System.Windows
 
                     SystemParameters.InvalidateWindowFrameThicknessProperties();
                     
-                    if(ThemeManager.IsFluentThemeEnabled)
+                    if(ThemeManager3.IsFluentThemeEnabled)
                     {
-                        ThemeManager.ApplySystemTheme();
+                        ThemeManager3.OnSystemThemeChanged();
                     }
+
                     break;
 
                 case WindowMessage.WM_TABLET_ADDED:
