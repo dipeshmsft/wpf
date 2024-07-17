@@ -16,9 +16,9 @@ public static class ThemeManager3
         {
             if(Application.Current.Theme == "None")
             {
-                if(AppResourceContainsFluentDictionary())
+                if(AppResourceContainsFluentDictionary(out string theme))
                 {
-                    Application.Current._theme = "System";
+                    Application.Current._theme = theme;
                 }
             }
         }
@@ -192,15 +192,18 @@ public static class ThemeManager3
 
     private static void RemoveFluentFromApplication()
     {
-        FindFluentThemeResourceDictionary(out ResourceDictionary fluentDictionary);
-        if(fluentDictionary != null)
+        int index = FindFluentThemeResourceDictionary();
+        if(index != -1)
         {
-            Application.Current.Resources.MergedDictionaries.Remove(fluentDictionary);
+            Application.Current.Resources.MergedDictionaries.RemoveAt(index);
         }
 
         foreach(Window window in Application.Current.Windows)
         {
-            RemoveStyleOnWindow(window);
+            if(!_fluentEnabledWindows.HasItem(window))
+            {
+                RemoveStyleOnWindow(window);
+            }
         }
     }
 
@@ -208,10 +211,10 @@ public static class ThemeManager3
     {
         if(window == null) return;
 
-        FindFluentThemeResourceDictionary(window, out ResourceDictionary fluentDictionary);
-        if(fluentDictionary != null)
+        int index = FindFluentThemeResourceDictionary(window);
+        if(index != -1)
         {
-            window.Resources.MergedDictionaries.Remove(fluentDictionary);
+            window.Resources.MergedDictionaries.RemoveAt(index);
         }
 
         RemoveStyleOnWindow(window);
@@ -234,9 +237,17 @@ public static class ThemeManager3
 
     private static void RemoveStyleOnWindow(Window window)
     {
-        // TODO : Remove the styles from windows which have BackdropDisabledWidowStyle
-        SetImmersiveDarkMode(window, false);
-        WindowBackdropManager.SetBackdrop(window, WindowBackdropType.None);
+        if(IsFluentThemeEnabled)
+        {
+            bool useLightColors = GetUseLightColors(Application.Current.Theme);
+            SetImmersiveDarkMode(window, !useLightColors);
+        }
+        else
+        {
+            // TODO : Remove the styles from windows which have BackdropDisabledWidowStyle
+            SetImmersiveDarkMode(window, false);
+            WindowBackdropManager.SetBackdrop(window, WindowBackdropType.None);
+        }
     }
 
     #endregion
@@ -249,24 +260,34 @@ public static class ThemeManager3
         return theme == "Light" || theme == "System" && IsSystemThemeLight();
     }
 
-    private static bool AppResourceContainsFluentDictionary()
+    private static bool AppResourceContainsFluentDictionary(out string theme)
     {
+        theme = "None";
         if(Application.Current != null)
         {
             string dictionarySource;
-            foreach(ResourceDictionary mergedDictionary in Application.Current.Resources.MergedDictionaries)
+            ResourceDictionary rd = Application.Current.Resources;
+            
+            for(int i = rd.MergedDictionaries.Count - 1; i >= 0; i--)
             {
-                if(mergedDictionary.Source != null)
+                dictionarySource = rd.MergedDictionaries[i].Source.ToString();
+                if(dictionarySource.Contains(fluentThemeResoruceDictionaryUri, StringComparison.OrdinalIgnoreCase))
                 {
-                    dictionarySource = mergedDictionary.Source.ToString();
-
-                    if(dictionarySource.Contains(fluentThemeResoruceDictionaryUri, 
-                                                    StringComparison.OrdinalIgnoreCase))
+                    if(dictionarySource.Contains("Fluent.Light", StringComparison.OrdinalIgnoreCase))
                     {
-                        return true;
+                        theme = "Light";
                     }
+                    else if(dictionarySource.Contains("Fluent.Dark", StringComparison.OrdinalIgnoreCase))
+                    {
+                        theme = "Dark";
+                    }
+                    else
+                    {
+                        theme = "System";
+                    }
+                    return true;
                 }
-            }
+            }            
         }
         return false;
     }
@@ -289,14 +310,18 @@ public static class ThemeManager3
 
         var newDictionary = new ResourceDictionary() { Source = dictionaryUri };
 
-        FindFluentThemeResourceDictionary(out ResourceDictionary fluentDictionary);
+        int index = FindFluentThemeResourceDictionary();
         
-        if (fluentDictionary != null)
+        if (index != -1)
         {
-            Application.Current.Resources.MergedDictionaries.Remove(fluentDictionary);
+            Application.Current.Resources.MergedDictionaries.RemoveAt(index);
+            Application.Current.Resources.MergedDictionaries.Insert(index, newDictionary);
+        }
+        else
+        {
+            Application.Current.Resources.MergedDictionaries.Add(newDictionary);
         }
 
-        Application.Current.Resources.MergedDictionaries.Add(newDictionary);
     }
 
     private static void AddOrUpdateThemeResources(Window window, Uri dictionaryUri)
@@ -305,52 +330,46 @@ public static class ThemeManager3
 
         var newDictionary = new ResourceDictionary() { Source = dictionaryUri };
 
-        FindFluentThemeResourceDictionary(window, out ResourceDictionary fluentDictionary);
+        int index = FindFluentThemeResourceDictionary(window);
         
-        if (fluentDictionary != null)
+        if (index != -1)
         {
-            window.Resources.MergedDictionaries.Remove(fluentDictionary);
+            window.Resources.MergedDictionaries.RemoveAt(index);
+            window.Resources.MergedDictionaries.Insert(index, newDictionary);
         }
-
-        window.Resources.MergedDictionaries.Add(newDictionary);
-    }
-
-    private static void FindFluentThemeResourceDictionary(out ResourceDictionary fluentDictionary)
-    {
-        fluentDictionary = null;
-
-        if (Application.Current == null) return;
-
-        foreach (ResourceDictionary mergedDictionary in Application.Current.Resources.MergedDictionaries)
+        else
         {
-            if (mergedDictionary.Source != null)
-            {
-                if (mergedDictionary.Source.ToString().Contains(fluentThemeResoruceDictionaryUri))
-                {
-                    fluentDictionary = mergedDictionary;
-                    break;
-                }
-            }
+            window.Resources.MergedDictionaries.Add(newDictionary);
         }
     }
 
-    private static void FindFluentThemeResourceDictionary(Window window, out ResourceDictionary fluentDictionary)
+    private static int FindFluentThemeResourceDictionary()
     {
-        fluentDictionary = null;
+        if (Application.Current == null) return -1;
+        return FindLastFlunetThemeResourceDictionaryIndex(Application.Current.Resources);
+    }
 
-        if(window == null) return;
+    private static int FindFluentThemeResourceDictionary(Window window)
+    {
+        if(window == null) return -1;
+        return FindLastFlunetThemeResourceDictionaryIndex(window.Resources);
+    }
 
-        foreach(ResourceDictionary mergedDictionary in window.Resources.MergedDictionaries)
+    private static int FindLastFlunetThemeResourceDictionaryIndex(ResourceDictionary rd)
+    {
+        if(rd == null) return -1;
+
+        for(int i = rd.MergedDictionaries.Count - 1; i >= 0; i--)
         {
-            if(mergedDictionary.Source != null)
+            if(rd.MergedDictionaries[i].Source != null)
             {
-                if(mergedDictionary.Source.ToString().Contains(fluentThemeResoruceDictionaryUri))
+                if(rd.MergedDictionaries[i].Source.ToString().Contains(fluentThemeResoruceDictionaryUri))
                 {
-                    fluentDictionary = mergedDictionary;
-                    break;
+                    return i;
                 }
             }
         }
+        return -1;
     }
 
     private static bool IsSystemThemeLight()
