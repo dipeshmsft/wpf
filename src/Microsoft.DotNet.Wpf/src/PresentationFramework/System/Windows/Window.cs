@@ -31,6 +31,7 @@ using Microsoft.Win32;
 
 using HRESULT = MS.Internal.Interop.HRESULT;
 using BuildInfo = MS.Internal.PresentationFramework.BuildInfo;
+using SNM = Standard.NativeMethods;
 
 //In order to avoid generating warnings about unknown message numbers and
 //unknown pragmas when compiling your C# source code with the actual C# compiler,
@@ -1296,7 +1297,7 @@ namespace System.Windows
                 _theme = value;
                 if(IsSourceWindowNull)
                 {
-                    _deferredThemeLoading = true;
+                    _deferThemeLoading = true;
                 }
                 else
                 {
@@ -2545,9 +2546,9 @@ namespace System.Windows
             if (Standard.Utility.IsOSWindows11OrNewer && ThemeManager3.IsFluentThemeEnabled)
             {
                 ThemeManager3.LoadDeferredApplicationTheme();
-                if(_deferredThemeLoading)
+                if(_deferThemeLoading)
                 {
-                    _deferredThemeLoading = false;
+                    _deferThemeLoading = false;
                     ThemeManager3.OnWindowThemeChanged(this, "None", Theme);
                 }
                 ThemeManager3.ApplyStyleOnWindow(this);
@@ -3089,6 +3090,35 @@ namespace System.Windows
             }
 
             WindowBackdropManager.SetBackdrop(window, (WindowBackdropType)e.NewValue);
+        }
+
+        internal void UpdateBackdrop()
+        {
+            if (SystemParameters.HighContrast 
+                    || (!ThemeManager3.IsFluentThemeEnabled && this.Theme == "None"))
+            {
+                this.WindowBackdropType = WindowBackdropType.None;
+            }
+            else
+            {
+                this.WindowBackdropType = WindowBackdropType.MainWindow;
+            }
+        }
+
+        // Is this a good idea to move this method here ? I tried doing it to avoid reapplication
+        internal void SetImmersiveDarkMode(bool useDarkMode)
+        {
+            if(!Standard.Utility.IsOSWindows11OrNewer) return;
+
+            if(useDarkMode != _useDarkMode)
+            {
+                IntPtr handle = CriticalHandle;
+                if (handle != IntPtr.Zero)
+                {
+                    SNM.DwmSetWindowAttributeUseImmersiveDarkMode(handle, useDarkMode);
+                    _useDarkMode = useDarkMode;
+                }
+            }
         }
 
 
@@ -7194,7 +7224,8 @@ namespace System.Windows
         private ArrayList           _threadWindowHandles;
 
         private string              _theme = "None";
-        internal bool               _deferredThemeLoading = false;
+        internal bool               _deferThemeLoading = false;
+        private bool               _useDarkMode = false;
 
         private bool                _updateHwndSize     = true;
         private bool                _updateHwndLocation = true;
