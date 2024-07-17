@@ -89,11 +89,18 @@ public static class ThemeManager3
 
     internal static void OnApplicationThemeChanged(string oldTheme, string newTheme)
     {
-        if(!IsFluentThemeEnabled) return;
+        IgnoreAppResourceDictionaryChanges = true;
+
+        if(!IsFluentThemeEnabled)
+        {
+            IgnoreAppResourceDictionaryChanges = false;
+            return;
+        }
 
         if(newTheme == "None")
         {
             RemoveFluentFromApplication();
+            IgnoreAppResourceDictionaryChanges = false;
             return;
         }
 
@@ -115,9 +122,26 @@ public static class ThemeManager3
             }
         }
 
+        IgnoreAppResourceDictionaryChanges = false;
+
         // _currentUseLightMode = useLightColors;
         // _currentFluentThemeResourceUri = fluentThemeResourceUri;
         // _currentAccentColor = AccentColorHelper.GetAccentColor();
+    }
+
+    internal static void OnAppResourcesChanged()
+    {
+        if(IgnoreAppResourceDictionaryChanges) return;
+
+        if(AppResourceContainsFluentDictionary(out string theme))
+        {
+            Application.Current.Theme = theme;
+        }
+        else
+        {
+            Application.Current.Theme = "None";
+        }
+
     }
 
     internal static void OnWindowThemeChanged(Window window, string oldTheme, string newTheme)
@@ -181,6 +205,17 @@ public static class ThemeManager3
         {
             if(Application.Current == null) return false;
             return Application.Current.Theme != "None";
+        }
+    }
+    internal static bool IgnoreAppResourceDictionaryChanges
+    {
+        get
+        {
+            return _ignoreAppResourceDictionaryChanges;
+        }
+        set
+        {
+            _ignoreAppResourceDictionaryChanges = value;
         }
     }
 
@@ -388,6 +423,8 @@ public static class ThemeManager3
     private static readonly string fluentThemeResoruceDictionaryUri = "pack://application:,,,/PresentationFramework.Fluent;component/Themes/";
     private static bool _deferredThemeLoading = false;
     internal static WindowCollection _fluentEnabledWindows = new WindowCollection();
+
+    private static bool _ignoreAppResourceDictionaryChanges = false;
 
     // private static bool _currentUseLightMode;
     // private static bool _currentFluentThemeResourceUri;

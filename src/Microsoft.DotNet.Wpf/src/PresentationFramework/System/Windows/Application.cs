@@ -979,6 +979,7 @@ namespace System.Windows
                 }
                 string oldTheme = _theme;
                 _theme = value;
+
                 ThemeManager3.OnApplicationThemeChanged(oldTheme, _theme);
             }
         }
@@ -1711,6 +1712,11 @@ namespace System.Windows
             // modifying the collection while we iterate over it
             InvalidateResourceReferenceOnWindowCollection(WindowsInternal.Clone(), info);
             InvalidateResourceReferenceOnWindowCollection(NonAppWindowsInternal.Clone(), info);
+
+            if(!ThemeManager3.IgnoreAppResourceDictionaryChanges)
+            {
+                ThemeManager3.OnAppResourcesChanged();
+            }
         }
 
         // Creates and returns a NavigationWindow for standalone cases
