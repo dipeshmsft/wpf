@@ -153,7 +153,7 @@ namespace System.Windows
                 _inTrustedSubWindow = false;
             }
             Initialize();
-}
+        }
         #endregion Constructors
 
         //---------------------------------------------------
@@ -1293,8 +1293,10 @@ namespace System.Windows
                 {
                     throw new ArgumentException("Invalid ApplicationTheme value. System, Light, Dark and None are the only valid values for ApplicationTheme property.");
                 }
+                
                 string oldTheme = _theme;
                 _theme = value;
+                
                 if(IsSourceWindowNull)
                 {
                     _deferThemeLoading = true;
@@ -2543,15 +2545,20 @@ namespace System.Windows
                 UnsafeNativeMethods.ChangeWindowMessageFilterEx(_swh.CriticalHandle, WindowMessage.WM_COMMAND, MSGFLT.ALLOW, out info);
             }
 
-            if (Standard.Utility.IsOSWindows11OrNewer && ThemeManager3.IsFluentThemeEnabled)
+            if (Standard.Utility.IsOSWindows11OrNewer)
             {
-                ThemeManager3.LoadDeferredApplicationTheme();
-                if(_deferThemeLoading)
+                if(ThemeManager3.IsFluentThemeEnabled || Theme != "None")
                 {
-                    _deferThemeLoading = false;
-                    ThemeManager3.OnWindowThemeChanged(this, "None", Theme);
+                    ThemeManager3.LoadDeferredApplicationTheme();
+                    if(_deferThemeLoading)
+                    {
+                        _deferThemeLoading = false;
+                        ThemeManager3.OnWindowThemeChanged(this, "None", Theme);
+                    }
+                    
+                    // This seems redundant
+                    // ThemeManager3.ApplyStyleOnWindow(this);
                 }
-                ThemeManager3.ApplyStyleOnWindow(this);
             }
 
             // Sub classes can have different intialization. RBW does very minimalistic
@@ -3645,14 +3652,7 @@ namespace System.Windows
             // TODO : Remove when Fluent theme is enabled by default
             if (ThemeManager3.IsFluentThemeEnabled)
             {
-                if(WindowBackdropManager.IsBackdropEnabled)
-                {
-                    SetResourceReference(StyleProperty, typeof(Window));
-                }
-                else
-                {
-                    SetResourceReference(StyleProperty, "BackdropDisabledWindowStyle");
-                }
+                SetResourceReference(StyleProperty, typeof(Window));
             }
         }
 
