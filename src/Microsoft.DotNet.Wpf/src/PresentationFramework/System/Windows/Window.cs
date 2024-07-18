@@ -31,6 +31,7 @@ using Microsoft.Win32;
 
 using HRESULT = MS.Internal.Interop.HRESULT;
 using BuildInfo = MS.Internal.PresentationFramework.BuildInfo;
+using SNM = Standard.NativeMethods;
 
 //In order to avoid generating warnings about unknown message numbers and
 //unknown pragmas when compiling your C# source code with the actual C# compiler,
@@ -152,7 +153,7 @@ namespace System.Windows
                 _inTrustedSubWindow = false;
             }
             Initialize();
-}
+        }
         #endregion Constructors
 
         //---------------------------------------------------
@@ -1275,6 +1276,35 @@ namespace System.Windows
             {
                 VerifyContextAndObjectState();
                 return OwnedWindowsInternal.Clone();
+            }
+        }
+
+        public string Theme
+        {
+            get
+            {
+                VerifyContextAndObjectState();
+                return _theme;
+            }
+            set
+            {
+                VerifyContextAndObjectState();
+                if(!ThemeManager3.VerifyApplicationTheme(value))
+                {
+                    throw new ArgumentException("Invalid ApplicationTheme value. System, Light, Dark and None are the only valid values for ApplicationTheme property.");
+                }
+                
+                string oldTheme = _theme;
+                _theme = value;
+                
+                if(IsSourceWindowNull)
+                {
+                    _deferThemeLoading = true;
+                }
+                else
+                {
+                    ThemeManager3.OnWindowThemeChanged(this, oldTheme, value);
+                }
             }
         }
 
@@ -2515,10 +2545,20 @@ namespace System.Windows
                 UnsafeNativeMethods.ChangeWindowMessageFilterEx(_swh.CriticalHandle, WindowMessage.WM_COMMAND, MSGFLT.ALLOW, out info);
             }
 
-            if (Standard.Utility.IsOSWindows11OrNewer && ThemeManager.IsFluentThemeEnabled)
+            if (Standard.Utility.IsOSWindows11OrNewer)
             {
-                ThemeManager.InitializeFluentTheme();
-                ThemeManager.ApplySystemTheme(this, true);
+                if(ThemeManager3.IsFluentThemeEnabled || Theme != "None")
+                {
+                    ThemeManager3.LoadDeferredApplicationTheme();
+                    if(_deferThemeLoading)
+                    {
+                        _deferThemeLoading = false;
+                        ThemeManager3.OnWindowThemeChanged(this, "None", Theme);
+                    }
+                    
+                    // This seems redundant
+                    // ThemeManager3.ApplyStyleOnWindow(this);
+                }
             }
 
             // Sub classes can have different intialization. RBW does very minimalistic
@@ -3059,6 +3099,35 @@ namespace System.Windows
             WindowBackdropManager.SetBackdrop(window, (WindowBackdropType)e.NewValue);
         }
 
+        internal void UpdateBackdrop()
+        {
+            if (SystemParameters.HighContrast 
+                    || (!ThemeManager3.IsFluentThemeEnabled && this.Theme == "None"))
+            {
+                this.WindowBackdropType = WindowBackdropType.None;
+            }
+            else
+            {
+                this.WindowBackdropType = WindowBackdropType.MainWindow;
+            }
+        }
+
+        // Is this a good idea to move this method here ? I tried doing it to avoid reapplication
+        internal void SetImmersiveDarkMode(bool useDarkMode)
+        {
+            if(!Standard.Utility.IsOSWindows11OrNewer) return;
+
+            if(useDarkMode != _useDarkMode)
+            {
+                IntPtr handle = CriticalHandle;
+                if (handle != IntPtr.Zero)
+                {
+                    SNM.DwmSetWindowAttributeUseImmersiveDarkMode(handle, useDarkMode);
+                    _useDarkMode = useDarkMode;
+                }
+            }
+        }
+
 
         internal bool HwndCreatedButNotShown
         {
@@ -3581,16 +3650,9 @@ namespace System.Windows
             }
 
             // TODO : Remove when Fluent theme is enabled by default
-            if (ThemeManager.IsFluentThemeEnabled)
+            if (ThemeManager3.IsFluentThemeEnabled)
             {
-                if(WindowBackdropManager.IsBackdropEnabled)
-                {
-                    SetResourceReference(StyleProperty, typeof(Window));
-                }
-                else
-                {
-                    SetResourceReference(StyleProperty, "BackdropDisabledWindowStyle");
-                }
+                SetResourceReference(StyleProperty, typeof(Window));
             }
         }
 
@@ -7160,6 +7222,10 @@ namespace System.Windows
         private IntPtr              _ownerHandle = IntPtr.Zero;   // no need to dispose this
         private WindowCollection    _ownedWindows;
         private ArrayList           _threadWindowHandles;
+
+        private string              _theme = "None";
+        internal bool               _deferThemeLoading = false;
+        private bool               _useDarkMode = false;
 
         private bool                _updateHwndSize     = true;
         private bool                _updateHwndLocation = true;
