@@ -32,7 +32,7 @@ internal static class WindowBackdropManager
         {
             return false;
         }
-
+        #pragma warning disable WPF0001
         if(!ThemeManager3.IsFluentThemeEnabled && window.ThemeMode == ThemeMode.None)
         {
             return false;

@@ -26,6 +26,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
@@ -955,7 +956,7 @@ namespace System.Windows
             get { return Resources; }
             set { Resources = value; }
         }
-
+        [Experimental(diagnosticId: "WPF0001")]
         [TypeConverter(typeof(ThemeModeConverter))]
         public ThemeMode ThemeMode
         {

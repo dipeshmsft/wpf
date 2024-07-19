@@ -11,6 +11,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Security;
@@ -558,7 +559,7 @@ namespace System.Windows
         //
         //---------------------------------------------------
         #region Public Properties
-
+        [Experimental(diagnosticId: "WPF0001")]
         [TypeConverter(typeof(ThemeModeConverter))]
         public ThemeMode ThemeMode
         {
@@ -2558,6 +2559,7 @@ namespace System.Windows
                 if(_deferThemeLoading)
                 {
                     _deferThemeLoading = false;
+                    #pragma warning disable WPF0001
                     ThemeManager3.OnWindowThemeChanged(this, ThemeMode.None, ThemeMode);
                 }
             }

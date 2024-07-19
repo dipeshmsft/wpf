@@ -18,12 +18,14 @@ internal static class ThemeManager3
     {
         if(IsFluentThemeEnabled)
         {
+            #pragma warning disable WPF0001
             bool useLightColors = GetUseLightColors(Application.Current.ThemeMode);
             var fluentThemeResourceUri = GetFluentThemeResourceUri(useLightColors);
             AddOrUpdateThemeResources(Application.Current.Resources, fluentThemeResourceUri);
 
             foreach(Window window in Application.Current.Windows)
             {
+                #pragma warning disable WPF0001
                 if(window.ThemeMode == ThemeMode.None)
                 {
                     ApplyStyleOnWindow(window, useLightColors);
@@ -39,7 +41,7 @@ internal static class ThemeManager3
             foreach(Window window in FluentEnabledWindows)
             {
                 if(window == null || window.IsDisposed) continue;
-
+                #pragma warning disable WPF0001
                 if(window.ThemeMode == ThemeMode.None)
                 {
                     RemoveFluentFromWindow(window);
@@ -110,10 +112,12 @@ internal static class ThemeManager3
     internal static void ApplyStyleOnWindow(Window window)
     {
         if(!IsFluentThemeEnabled && window.ThemeMode == ThemeMode.None) return;
-
+        #pragma warning disable WPF0001
         bool useLightColors = GetUseLightColors(Application.Current.ThemeMode);
+        #pragma warning disable WPF0001
         if(window.ThemeMode != ThemeMode.None)
         {
+            #pragma warning disable WPF0001
             useLightColors = GetUseLightColors(window.ThemeMode);
         }
         ApplyStyleOnWindow(window, useLightColors);
@@ -121,6 +125,7 @@ internal static class ThemeManager3
 
     internal static bool IsValidThemeMode(ThemeMode themeMode)
     {
+        #pragma warning disable WPF0001
         return themeMode == ThemeMode.None || themeMode == ThemeMode.Light || themeMode == ThemeMode.Dark || themeMode == ThemeMode.System;
     }
 
@@ -167,7 +172,7 @@ internal static class ThemeManager3
     private static void ApplyFluentOnWindow(Window window)
     {
         if(window == null || window.IsDisposed) return;
-        
+        #pragma warning disable WPF0001
         bool useLightColors = GetUseLightColors(window.ThemeMode);
         var fluentThemeResourceUri = GetFluentThemeResourceUri(useLightColors);
         AddOrUpdateThemeResources(window.Resources, fluentThemeResourceUri);
@@ -182,9 +187,10 @@ internal static class ThemeManager3
     private static void RemoveStyleFromWindow(Window window)
     {
         if(window == null || window.IsDisposed) return;
-
+        #pragma warning disable WPF0001
         if(IsFluentThemeEnabled || window.ThemeMode != ThemeMode.None)
         {
+            #pragma warning disable WPF0001
             bool useLightColors = GetUseLightColors(Application.Current.ThemeMode);
             window.SetImmersiveDarkMode(!useLightColors);
         }
@@ -225,6 +231,7 @@ internal static class ThemeManager3
         get
         {
             if(Application.Current == null) return false;
+            #pragma warning disable WPF0001
             return Application.Current.ThemeMode != ThemeMode.None;
         }
     }
