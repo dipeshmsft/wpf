@@ -2551,10 +2551,25 @@ namespace System.Windows
 
             if (Standard.Utility.IsOSWindows10OrNewer)
             {
+                if(ThemeManager3.DeferSyncingThemeModeAndResources)
+                {
+                    ThemeManager3.DeferSyncingThemeModeAndResources = false;
+                    ThemeManager3.DefferedSyncThemeModeAndResources(Application.Current?.ThemeMode);
+                }
+
                 if(ThemeManager3.IsFluentThemeEnabled)
                 {
                     // Should deffered be added here ?
-                    ThemeManager3.ApplyStyleOnWindow(this);
+
+                    if(ThemeManager3.DeferredAppThemeLoading)
+                    {
+                        ThemeManager3.OnApplicationThemeChanged(ThemeMode.None, Application.Current.ThemeMode);
+                        ThemeManager3.DeferredAppThemeLoading = false;
+                    }
+                    else
+                    {
+                        ThemeManager3.ApplyStyleOnWindow(this);
+                    }
                 }
 
                 if(_deferThemeLoading)

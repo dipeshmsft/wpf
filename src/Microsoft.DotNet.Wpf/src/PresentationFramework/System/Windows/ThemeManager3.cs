@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Appearance;
+using System.Diagnostics;
+
 
 namespace System.Windows;
 
@@ -16,8 +18,14 @@ internal static class ThemeManager3
 
     internal static void OnSystemThemeChanged()
     {
+        Debug.WriteLine("> OnSystemThemeChanged");
+        Debug.WriteLine($"    SystemParameters.HighContrast : {SystemParameters.HighContrast}");
+        Debug.WriteLine($"    IsFluentThemeEnabled : {IsFluentThemeEnabled}");
+
         if(IsFluentThemeEnabled)
         {
+            IgnoreAppResourcesChange = true;
+
             bool useLightColors = GetUseLightColors(Application.Current.ThemeMode);
             var fluentThemeResourceUri = GetFluentThemeResourceUri(useLightColors);
             AddOrUpdateThemeResources(Application.Current.Resources, fluentThemeResourceUri);
@@ -33,6 +41,8 @@ internal static class ThemeManager3
                     ApplyFluentOnWindow(window);
                 }
             }
+
+            IgnoreAppResourcesChange = false;
         }
         else
         {
@@ -54,13 +64,18 @@ internal static class ThemeManager3
 
     internal static void OnApplicationThemeChanged(ThemeMode oldThemeMode, ThemeMode newThemeMode)
     {
+        Debug.WriteLine($"> OnApplicationThemeChanged : {oldThemeMode} -> {newThemeMode}");
+
         IgnoreAppResourcesChange = true;
 
         try
         {
-            if(newThemeMode == ThemeMode.None && oldThemeMode != newThemeMode)
+            if(newThemeMode == ThemeMode.None)
             {
-                RemoveFluentFromApplication();
+                if(oldThemeMode != newThemeMode)
+                {
+                    RemoveFluentFromApplication();
+                }
                 return;
             }
 
@@ -85,6 +100,8 @@ internal static class ThemeManager3
 
     internal static void OnWindowThemeChanged(Window window, ThemeMode oldThemeMode, ThemeMode newThemeMode)
     {
+        Debug.WriteLine($"> OnWindowThemeChanged : {oldThemeMode} -> {newThemeMode}");
+
         if(newThemeMode == ThemeMode.None)
         {
             if(newThemeMode != oldThemeMode)
@@ -105,6 +122,47 @@ internal static class ThemeManager3
     internal static void LoadDefferedApplicationTheme()
     {
 
+    }
+
+    internal static bool SyncThemeModeAndResources()
+    {
+        Debug.WriteLine("> SyncThemeModeAndResources");
+
+        ResourceDictionaryContainsFluentDictionary(Application.Current.Resources, out ThemeMode themeMode);
+
+        Debug.WriteLine($"    Application ThemeMode - Current : {Application.Current.ThemeMode}, New : {themeMode}");
+        
+        if(themeMode == ThemeMode.System || DeferSyncingThemeModeAndResources)
+        {
+            return true;
+        }
+
+        
+        if(themeMode == ThemeMode.None)
+        {
+            themeMode = Application.Current.ThemeMode;
+        }
+
+        if(Application.Current.ThemeMode != themeMode)
+        {
+            Application.Current.ThemeMode = themeMode;
+            Debug.WriteLine($"    Application ThemeMode - Updated : {Application.Current.ThemeMode}");
+            return true;
+        }
+        Debug.WriteLine($"    Application ThemeMode - No Change : {Application.Current.ThemeMode}");
+        return false;
+    }
+
+    internal static void DeferredSyncThemeModeAndResources(ThemeMode themeMode)
+    {
+        if(themeMode == null) return;
+
+        if(themeMode == ThemeMode.None)
+        {
+            themeMode = Application.Current.ThemeMode;
+        }
+
+        Application.Current.ThemeMode = themeMode;
     }
 
     internal static void ApplyStyleOnWindow(Window window)
@@ -215,10 +273,18 @@ internal static class ThemeManager3
         }
     }
 
+    internal static Uri GetThemeResource(ThemeMode themeMode)
+    {
+        bool useLightColors = GetUseLightColors(themeMode);
+        return GetFluentThemeResourceUri(useLightColors);
+    }
+
     #endregion
 
 
     #region Internal Properties
+
+    internal static bool DeferSyncingThemeModeAndResources { get; set; } = true;
 
     internal static bool IsFluentThemeEnabled
     {
@@ -228,6 +294,8 @@ internal static class ThemeManager3
             return Application.Current.ThemeMode != ThemeMode.None;
         }
     }
+
+    internal static bool DeferredAppThemeLoading { get; set; } = false;
 
     internal static bool IgnoreAppResourcesChange { get; set; } = false;
 
