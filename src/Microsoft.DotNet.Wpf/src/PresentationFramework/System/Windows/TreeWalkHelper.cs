@@ -680,6 +680,13 @@ namespace System.Windows
         {
             Debug.Assert(d != null, "Must have non-null current node");
 
+            Window currentWindow = d as Window;
+
+            if(currentWindow != null && !ThemeManager3.IgnoreWindowResourcesChange)
+            {
+                ThemeManager3.SyncWindowThemeModeAndResources(currentWindow);
+            }
+
             // Find properties that have resource reference value
             LocalValueEnumerator localValues = d.GetLocalValueEnumerator();
             int localValuesCount = localValues.Count;

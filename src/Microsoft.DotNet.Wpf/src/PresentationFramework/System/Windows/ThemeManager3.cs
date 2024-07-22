@@ -1,6 +1,7 @@
 using Standard;
 using Microsoft.Win32;
 using System.Collections;
+using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using System.Windows.Interop;
 using System.Windows.Media;
@@ -168,6 +169,40 @@ internal static class ThemeManager3
         }
     }
 
+    internal static void SyncWindowThemeModeAndResources(Window window)
+    {
+        Collection<ResourceDictionary> windowResources = window.Resources.MergedDictionaries;
+        bool containsFluentResource = false;
+
+        for (int i = windowResources.Count - 1 ; i >= 0 ; i--) 
+        {
+            if (windowResources[i].Source.ToString().Contains("Fluent")) 
+            {
+                containsFluentResource = true;
+                
+                if(windowResources[i].Source.ToString().Contains("Light"))
+                {
+                    window.ThemeMode = ThemeMode.Light;
+                }
+                else if(windowResources[i].Source.ToString().Contains("Dark"))
+                {
+                    window.ThemeMode = ThemeMode.Dark;
+                }
+                else
+                {
+                    window.ThemeMode = ThemeMode.System;
+                }
+
+                break;
+            }
+        }
+
+        if(!containsFluentResource)
+        {
+            window.ThemeMode = ThemeMode.None;
+        }
+    }
+
     internal static void ApplyStyleOnWindow(Window window)
     {
         if(!IsFluentThemeEnabled && window.ThemeMode == ThemeMode.None) return;
@@ -243,7 +278,7 @@ internal static class ThemeManager3
         
         bool useLightColors = GetUseLightColors(window.ThemeMode);
         var fluentThemeResourceUri = GetFluentThemeResourceUri(useLightColors);
-        AddOrUpdateThemeResources(window.Resources, fluentThemeResourceUri);
+        AddOrUpdateThemeResources(window.Resources, fluentThemeResourceUri, true);
         ApplyStyleOnWindow(window, useLightColors);
 
         if(!FluentEnabledWindows.HasItem(window))
@@ -312,6 +347,8 @@ internal static class ThemeManager3
 
     internal static bool IgnoreAppResourcesChange { get; set; } = false;
 
+    internal static bool IgnoreWindowResourcesChange { get; set; } = false;
+
     internal static double DefaultFluentThemeFontSize => 14;
 
     internal static WindowCollection FluentEnabledWindows { get; set; } = new WindowCollection();
@@ -377,7 +414,7 @@ internal static class ThemeManager3
 
     }
 
-    private static void AddOrUpdateThemeResources(ResourceDictionary rd, Uri dictionaryUri)
+    private static void AddOrUpdateThemeResources(ResourceDictionary rd, Uri dictionaryUri, bool isWindowUpdate = false)
     {
         if (rd == null) return;
 
@@ -386,14 +423,23 @@ internal static class ThemeManager3
         var newDictionary = new ResourceDictionary() { Source = dictionaryUri };
         int index = FindLastFluentThemeResourceDictionaryIndex(rd);
 
+        IgnoreWindowResourcesChange = true;
+
         if (index >= 0)
         {
+            if(isWindowUpdate && rd.MergedDictionaries[index].Source.ToString().Equals(dictionaryUri.ToString(), StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
             rd.MergedDictionaries[index] = newDictionary;
         }
         else
         {
             rd.MergedDictionaries.Insert(0, newDictionary);
         }
+
+        IgnoreWindowResourcesChange = false;
     }
 
     private static int FindLastFluentThemeResourceDictionaryIndex(ResourceDictionary rd)
