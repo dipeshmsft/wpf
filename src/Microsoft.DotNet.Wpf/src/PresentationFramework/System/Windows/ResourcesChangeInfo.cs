@@ -85,6 +85,20 @@ namespace System.Windows
 
         #endregion Constructors
 
+        #region Internal Properties
+
+        internal IEnumerable<ResourceDictionary> OldDictionaries
+        {
+            get { return _oldDictionaries; }
+        }
+
+        internal IEnumerable<ResourceDictionary> NewDictionaries
+        {
+            get { return _newDictionaries; }
+        }
+
+        #endregion
+
         #region Operations
 
         /// <summary>
@@ -197,6 +211,11 @@ namespace System.Windows
         internal bool IsResourceAddOperation
         {
             get { return _key != null || (_newDictionaries != null && _newDictionaries.Count > 0); }
+        }
+
+        internal bool IsIndividualResourceAddOperation
+        {
+            get { return _key != null; }
         }
 
         // This member is used to identify the container when a style change happens

@@ -125,8 +125,14 @@ internal static class ThemeManager
         ApplyFluentOnWindow(window);
     }
 
-    internal static bool SyncThemeMode()
+    internal static bool SyncThemeMode(ResourcesChangeInfo info)
     {
+        if (!ContainsFluentThemeDictionary(info.OldDictionaries)
+                && !ContainsFluentThemeDictionary(info.NewDictionaries))
+        {
+            return false;
+        }
+
        ThemeMode themeMode = GetThemeModeFromResourceDictionary(Application.Current.Resources);
 
         if (Application.Current.ThemeMode != themeMode)
@@ -135,46 +141,6 @@ internal static class ThemeManager
             return themeMode == ThemeMode.None ? false : true;
         }
         return false;
-    }
-
-    internal static void SyncThemeModeAndResources()
-    {
-        // Since, this is called from window there is a possiblity that the application
-        // instance is null. Hence, we need to check for null.
-        if(Application.Current == null) 
-            return;
-
-        ThemeMode themeMode = Application.Current.ThemeMode;
-        var rd = Application.Current.Resources;
-
-        bool resyncThemeMode = false;
-        int index = LastIndexOfFluentThemeDictionary(rd);
-
-        if (index == -1)
-        {
-            // This means that ThemeMode was set but Resources were not set during initialization.
-            // Hence we need to resync.
-            if (themeMode != ThemeMode.None)
-            {
-                resyncThemeMode = true;
-            }
-        }
-        else
-        {
-            // If index > 0, then Fluent theme dictionary was added manually.
-            // If ThemeMode is None, and yet there is a Fluent theme dictionary, hence that was manually set.
-            // Hence we need to resync.
-            if (index > 0 || themeMode == ThemeMode.None)
-            {
-                themeMode = GetThemeModeFromSourceUri(rd.MergedDictionaries[index].Source);
-                resyncThemeMode = true;
-            }
-        }
-
-        if (resyncThemeMode)
-        {
-            Application.Current.ThemeMode = themeMode;
-        }
     }
 
     internal static void ApplyStyleOnWindow(Window window)
@@ -316,8 +282,6 @@ internal static class ThemeManager
 
     #region Internal Properties
 
-    internal static bool IsAppThemeModeSyncEnabled { get; set; } = false;
-
     internal static bool IsFluentThemeEnabled
     {
         get
@@ -327,8 +291,6 @@ internal static class ThemeManager
             return Application.Current.ThemeMode != ThemeMode.None;
         }
     }
-
-    internal static bool DeferredAppThemeLoading { get; set; } = false;
 
     internal static bool SkipAppThemeModeSyncing { get; set; } = false;
 
@@ -444,6 +406,26 @@ internal static class ThemeManager
             }
         }
         return -1;
+    }
+
+    private static bool ContainsFluentThemeDictionary(IEnumerable<ResourceDictionary> dictionaries)
+    {
+        if(dictionaries == null)
+            return false;
+
+        foreach (var dictionary in dictionaries)
+        {
+            if (dictionary.Source != null)
+            {
+                if (dictionary.Source.ToString().StartsWith(FluentThemeResourceDictionaryUri,
+                                                            StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private static IEnumerable<int> FindAllFluentThemeResourceDictionaryIndices(ResourceDictionary rd)

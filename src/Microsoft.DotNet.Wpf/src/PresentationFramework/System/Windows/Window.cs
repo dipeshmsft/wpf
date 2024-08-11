@@ -2558,24 +2558,9 @@ namespace System.Windows
 
             if (Standard.Utility.IsOSWindows10OrNewer)
             {
-                if(!ThemeManager.IsAppThemeModeSyncEnabled)
-                {
-                    ThemeManager.SyncThemeModeAndResources();
-                    ThemeManager.IsAppThemeModeSyncEnabled = true;
-                }
-
                 if(ThemeManager.IsFluentThemeEnabled)
                 {
-
-                    if(ThemeManager.DeferredAppThemeLoading)
-                    {
-                        ThemeManager.OnApplicationThemeChanged(ThemeMode.None, Application.Current.ThemeMode);
-                        ThemeManager.DeferredAppThemeLoading = false;
-                    }
-                    else
-                    {
-                        ThemeManager.ApplyStyleOnWindow(this);
-                    }
+                    ThemeManager.ApplyStyleOnWindow(this);
                 }
 
                 if(_deferThemeLoading)
