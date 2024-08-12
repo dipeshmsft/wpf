@@ -936,8 +936,8 @@ namespace System.Windows
                 {
                     if(value != null)
                     {
-                        var uri = ThemeManager.GetThemeResource(ThemeMode);
-                        value.MergedDictionaries.Insert(0, new ResourceDictionary() { Source = uri });
+                        ResourceDictionary rd = ThemeManager.GetFluentThemeDictionary(ThemeMode);
+                        value.MergedDictionaries.Insert(0, rd);
                     }
                     ThemeManager.DeferredAppThemeLoading = false;
                 }
@@ -993,6 +993,7 @@ namespace System.Windows
                     // If the resources are not initializd, 
                     // fluent dictionary included will be reset.
                     // Hence, deferring the step.
+                    ThemeManager.OnApplicationThemeChanged(oldValue, value);
                     ThemeManager.DeferredAppThemeLoading = true;
                     return;
                 }
@@ -1741,8 +1742,7 @@ namespace System.Windows
             //      i.e. SkipAppThemeModeSyncing is set to true
             //  - if application's ThemeMode and Resources sync is enabled.
             //      i.e. IsAppThemeModeSyncEnabled is set to true
-            if (!ThemeManager.SkipAppThemeModeSyncing 
-                    && ThemeManager.IsAppThemeModeSyncEnabled)
+            if (!ThemeManager.SkipAppThemeModeSyncing)
             {
                 ThemeManager.SyncThemeMode();
             }
