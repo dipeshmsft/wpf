@@ -932,14 +932,15 @@ namespace System.Windows
                     oldValue.RemoveOwner(this);
                 }
 
-                if(ThemeManager.DeferredAppThemeLoading && !_resourcesInitialized)
+                if(_reloadFluentDictionary && !_resourcesInitialized)
                 {
                     if(value != null)
                     {
                         var uri = ThemeManager.GetThemeResource(ThemeMode);
                         value.MergedDictionaries.Insert(0, new ResourceDictionary() { Source = uri });
+                        ThemeManager.SkipAppThemeModeSyncing = true;
                     }
-                    ThemeManager.DeferredAppThemeLoading = false;
+                    _reloadFluentDictionary = false;
                 }
 
                 if (value != null)
@@ -959,6 +960,11 @@ namespace System.Windows
                 if (invalidateResources)
                 {
                     InvalidateResourceReferences(new ResourcesChangeInfo(oldValue, value));
+                }
+
+                if(ThemeManager.SkipAppThemeModeSyncing)
+                {
+                    ThemeManager.SkipAppThemeModeSyncing = false;
                 }
             }
         }
@@ -993,7 +999,9 @@ namespace System.Windows
                     // If the resources are not initializd, 
                     // fluent dictionary included will be reset.
                     // Hence, deferring the step.
-                    ThemeManager.DeferredAppThemeLoading = true;
+                    ThemeManager.OnApplicationThemeChanged(oldValue, value);
+                    _reloadFluentDictionary = true;
+                    _resourcesInitialized = false;
                     return;
                 }
 
@@ -1732,20 +1740,19 @@ namespace System.Windows
 
         internal void InvalidateResourceReferences(ResourcesChangeInfo info)
         {
-            _resourcesInitialized = true;
             
             // Sync needs to be performed only under the following conditions:
             //  - the resource change event raised is due to a collection change
             //      i.e. it is not a IsIndividualResourceAddOperation
             //  - the event is not raised due to the change in Application.ThemeMode
             //      i.e. SkipAppThemeModeSyncing is set to true
-            //  - if application's ThemeMode and Resources sync is enabled.
-            //      i.e. IsAppThemeModeSyncEnabled is set to true
-            if (!ThemeManager.SkipAppThemeModeSyncing 
-                    && ThemeManager.IsAppThemeModeSyncEnabled)
+            if (!info.IsIndividualResourceAddOperation 
+                    && !ThemeManager.SkipAppThemeModeSyncing)
             {
-                ThemeManager.SyncThemeMode();
+                ThemeManager.SyncThemeMode(info);
             }
+
+            _resourcesInitialized = true;
             
             // Invalidate ResourceReference properties on all the windows.
             // we Clone() the collection b/c if we don't then some other thread can be
@@ -2490,6 +2497,7 @@ namespace System.Windows
 
         private ThemeMode                   _themeMode = ThemeMode.None;
         private bool                        _resourcesInitialized = false;
+        private bool                        _reloadFluentDictionary = false;
 
         private SecurityCriticalDataForSet<MimeType> _appMimeType;
         private IServiceProvider            _serviceProvider;
