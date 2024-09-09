@@ -1962,7 +1962,7 @@ namespace System.Windows.Data
 
         /// <summary>
         /// Get the converted proposed value and inform the binding group
-        /// <summary>
+        /// </summary>
         internal override bool ObtainConvertedProposedValue(BindingGroup bindingGroup)
         {
             bool result = true;
@@ -2057,7 +2057,7 @@ namespace System.Windows.Data
 
         /// <summary>
         /// Update the source value and inform the binding group
-        /// <summary>
+        /// </summary>
         internal override bool UpdateSource(BindingGroup bindingGroup)
         {
             bool result = true;
@@ -2084,7 +2084,7 @@ namespace System.Windows.Data
 
         /// <summary>
         /// Run validation rules for the given step
-        /// <summary>
+        /// </summary>
         internal override bool Validate(object value, ValidationStep validationStep)
         {
             // run rules attached to this binding
@@ -2131,7 +2131,7 @@ namespace System.Windows.Data
 
         /// <summary>
         /// Run validation rules for the given step, and inform the binding group
-        /// <summary>
+        /// </summary>
         internal override bool CheckValidationRules(BindingGroup bindingGroup, ValidationStep validationStep)
         {
             if (!NeedsValidation)

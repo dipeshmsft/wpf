@@ -492,7 +492,7 @@ namespace MS.Internal.Data
         }
 
         /// <summary>
-        /// Returns true if an </seealso cref="IEditableCollectionView.AddNew"> transaction is in progress.
+        /// Returns true if an <seealso  cref="IEditableCollectionView.AddNew" /> transaction is in progress.
         /// </summary>
         bool IEditableCollectionView.IsAddingNew
         {
@@ -511,7 +511,7 @@ namespace MS.Internal.Data
         }
 
         /// <summary>
-        /// When an </seealso cref="IEditableCollectionView.AddNew"> transaction is in progress, this property
+        /// When an <seealso  cref="IEditableCollectionView.AddNew" /> transaction is in progress, this property
         /// returns the new item.  Otherwise it returns null.
         /// </summary>
         object IEditableCollectionView.CurrentAddItem
@@ -671,7 +671,7 @@ namespace MS.Internal.Data
         }
 
         /// <summary>
-        /// Returns true if an </seealso cref="IEditableCollectionView.EditItem"> transaction is in progress.
+        /// Returns true if an <seealso  cref="IEditableCollectionView.EditItem" /> transaction is in progress.
         /// </summary>
         bool IEditableCollectionView.IsEditingItem
         {
@@ -690,7 +690,7 @@ namespace MS.Internal.Data
         }
 
         /// <summary>
-        /// When an </seealso cref="IEditableCollectionView.EditItem"> transaction is in progress, this property
+        /// When an <seealso  cref="IEditableCollectionView.EditItem" /> transaction is in progress, this property
         /// returns the affected item.  Otherwise it returns null.
         /// </summary>
         object IEditableCollectionView.CurrentEditItem
@@ -799,7 +799,7 @@ namespace MS.Internal.Data
         /// The value may be null if the view does not know whether live sorting is enabled.
         /// Calling the setter when CanChangeLiveSorting is false will throw an
         /// InvalidOperationException.
-        ///</summary
+        ///</summary>
         bool? ICollectionViewLiveShaping.IsLiveSorting
         {
             get
