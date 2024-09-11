@@ -1,0 +1,41 @@
+### Control Template Comparision - Fluent / Aero2
+
+- [x] Button
+- [ ] Calendar
+- [ ] CheckBox
+- [ ] ComboBox
+- [ ] ContextMenu
+- [ ] DataGrid
+- [ ] DatePicker
+- [ ] Expander
+- [ ] Frame
+- [x] Label
+- [ ] ListBox
+- [ ] ListBoxItem
+- [ ] ListView
+- [ ] ListViewItem
+- [ ] Menu
+- [ ] MenuItem
+- [x] Page
+- [ ] PasswordBox
+- [ ] ProgressBar
+- [ ] RadioButton
+- [x] RepeatButton
+  - [ ] Add TargetName in ControlTemplate triggers
+- [ ] RichTextBox
+- [ ] ScrollBar
+- [ ] ScrollViewer
+- [x] Separator
+- [ ] Slider
+- [ ] StatusBar
+- [ ] TabControl
+- [x] TextBlock
+- [ ] TextBox
+- [x] ToggleButton
+  - [ ] Maybe needs adding TargetName in ControlTemplate triggers
+- [ ] ToolBar
+- [X] ToolTip
+- [x] TreeView
+- [x] TreeViewItem
+- [x] Window
+

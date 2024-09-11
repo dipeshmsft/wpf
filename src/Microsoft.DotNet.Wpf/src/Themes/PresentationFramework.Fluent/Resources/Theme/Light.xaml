@@ -474,7 +474,7 @@
     <SolidColorBrush x:Key="InfoBarInformationalSeverityIconBackground" Color="{StaticResource SystemAccentColor}" />
 
     <!--  Label  -->
-    <SolidColorBrush x:Key="LabelForeground" Color="{StaticResource TextFillColorSecondary}" />
+    <SolidColorBrush x:Key="LabelForeground" Color="{StaticResource TextFillColorPrimary}" />
 
     <!--  ListBox  -->
     <Color x:Key="SystemChromeMediumLowColor">#FFF2F2F2</Color>
@@ -526,6 +526,9 @@
     <SolidColorBrush x:Key="NavigationViewItemBackgroundSelectedLeftFluent" Color="{StaticResource ControlFillColorDefault}" />
     <SolidColorBrush x:Key="NavigationViewItemForegroundLeftFluent" Color="{StaticResource TextFillColorPrimary}" />
     <SolidColorBrush x:Key="NavigationViewItemForegroundPointerOverLeftFluent" Color="{StaticResource TextFillColorPrimary}" />
+
+    <!-- Page -->
+    <SolidColorBrush x:Key="PageForeground" Color="{StaticResource TextFillColorPrimary}" />
 
     <!--  ProgressBar  -->
     <SolidColorBrush x:Key="ProgressBarForeground" Color="{StaticResource SystemAccentColorDark1}" />

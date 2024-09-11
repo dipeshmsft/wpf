@@ -103,8 +103,8 @@
                         <Grid Height="32" VerticalAlignment="Top">
                             <Ellipse
                                 x:Name="OuterEllipse"
-                                Width="{StaticResource RadioButtonOuterEllipseSize}"
-                                Height="{StaticResource RadioButtonOuterEllipseSize}"
+                                Width="20"
+                                Height="20"
                                 Fill="{DynamicResource RadioButtonOuterEllipseFill}"
                                 Stroke="{DynamicResource RadioButtonOuterEllipseStroke}"
                                 StrokeThickness="{StaticResource RadioButtonStrokeThickness}"
@@ -112,8 +112,8 @@
                             <!--  A seperate element is added since the two orthogonal state groups that cannot touch the same property  -->
                             <Ellipse
                                 x:Name="CheckOuterEllipse"
-                                Width="{StaticResource RadioButtonOuterEllipseSize}"
-                                Height="{StaticResource RadioButtonOuterEllipseSize}"
+                                Width="20"
+                                Height="20"
                                 Fill="{TemplateBinding Background}"
                                 Opacity="0"
                                 Stroke="{TemplateBinding Background}"

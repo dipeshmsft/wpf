@@ -480,7 +480,7 @@
     <SolidColorBrush x:Key="InfoBarInformationalSeverityIconBackground" Color="{StaticResource SystemAccentColor}" />
 
     <!--  Label  -->
-    <SolidColorBrush x:Key="LabelForeground" Color="{StaticResource TextFillColorSecondary}" />
+    <SolidColorBrush x:Key="LabelForeground" Color="{StaticResource TextFillColorPrimary}" />
 
     <!--  ListBox  -->
     <SolidColorBrush x:Key="ListBoxBackground" Color="{StaticResource CardBackgroundFillColorDefault}" />
