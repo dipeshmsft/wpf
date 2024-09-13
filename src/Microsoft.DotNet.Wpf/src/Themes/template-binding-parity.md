@@ -1,36 +1,39 @@
 ### Control Template Comparision - Fluent / Aero2
 
 - [x] Button
-- [ ] Calendar
-- [ ] CheckBox
-- [ ] ComboBox
-- [ ] ContextMenu
+- [x] Calendar
+- [x] CheckBox
+- [x] ComboBox
+- [x] ContextMenu
 - [ ] DataGrid
-- [ ] DatePicker
-- [ ] Expander
-- [ ] Frame
+- [x] DatePicker
+- [x] Expander
+- [x] Frame
 - [x] Label
-- [ ] ListBox
-- [ ] ListBoxItem
-- [ ] ListView
-- [ ] ListViewItem
-- [ ] Menu
-- [ ] MenuItem
+- [x] ListBox
+- [x] ListBoxItem
+- [x] ListView
+- [x] ListViewItem
+- [x] Menu
+- [x] MenuItem
 - [x] Page
-- [ ] PasswordBox
-- [ ] ProgressBar
-- [ ] RadioButton
+- [x] PasswordBox
+  - [ ] Replace with ScrollViewer
+- [x] ProgressBar
+- [x] RadioButton
 - [x] RepeatButton
   - [ ] Add TargetName in ControlTemplate triggers
-- [ ] RichTextBox
-- [ ] ScrollBar
-- [ ] ScrollViewer
+- [x] RichTextBox
+- [x] ScrollBar
+- [x] ScrollViewer
 - [x] Separator
-- [ ] Slider
-- [ ] StatusBar
-- [ ] TabControl
+- [x] Slider
+  - [ ] Hard to understand what WinUI is doing ?
+- [x] StatusBar
+- [x] TabControl
+- [x] TabItem
 - [x] TextBlock
-- [ ] TextBox
+- [x] TextBox
 - [x] ToggleButton
   - [ ] Maybe needs adding TargetName in ControlTemplate triggers
 - [ ] ToolBar

@@ -487,6 +487,8 @@
     <SolidColorBrush x:Key="ListBoxItemUnselectedBackgroundPointerOverThemeBrush" Color="{StaticResource ControlAltFillColorTertiary}" />
 
     <!--  ListView  -->
+    <SolidColorBrush x:Key="ListViewBackground" Color="" />
+    <SolidColorBrush x:Key="ListViewBorderBrush" Color="" />
     <SolidColorBrush x:Key="ListViewItemForeground" Color="{StaticResource TextFillColorPrimary}" />
     <SolidColorBrush x:Key="ListViewItemPillFillBrush" Color="{StaticResource SystemAccentColorDark1}" />
     <SolidColorBrush x:Key="ListViewItemBackgroundPointerOver" Color="{StaticResource SubtleFillColorSecondary}" />
@@ -558,6 +560,8 @@
     <SolidColorBrush x:Key="RadioButtonOuterEllipseStroke" Color="{StaticResource ControlStrongStrokeColorDefault}" />
     <SolidColorBrush x:Key="RadioButtonOuterEllipseStrokePressed" Color="{StaticResource ControlStrongStrokeColorDisabled}" />
     <SolidColorBrush x:Key="RadioButtonOuterEllipseStrokeDisabled" Color="{StaticResource ControlStrongStrokeColorDisabled}" />
+    <SolidColorBrush x:Key="RadioButtonOuterEllipseCheckedFill" Color="{}"/>
+    <SolidColorBrush x:Key="RadioButtonOuterEllipseCheckedStroke" Color=""/> 
 
     <!--  RatingControl  -->
     <SolidColorBrush x:Key="RatingControlSelectedForeground" Color="{StaticResource SystemAccentColorDark1}" />

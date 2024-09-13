@@ -14,6 +14,7 @@
         <Setter Property="Foreground" Value="{DynamicResource ContextMenuForeground}" />
         <Setter Property="Background" Value="{DynamicResource ContextMenuBackground}" />
         <Setter Property="BorderBrush" Value="{DynamicResource ContextMenuBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
         <Setter Property="MinWidth" Value="140" />
         <Setter Property="Padding" Value="0" />
         <Setter Property="Margin" Value="0" />
@@ -30,7 +31,7 @@
                         Padding="0,3,0,3"
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="1"
+                        BorderThickness="{TemplateBinding BorderThickness}"
                         CornerRadius="8">
                         <Border.RenderTransform>
                             <TranslateTransform />

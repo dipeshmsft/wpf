@@ -18,7 +18,7 @@
 
     <Thickness x:Key="CheckBoxPadding">11,5,11,6</Thickness>
     <Thickness x:Key="CheckBoxBorderThemeThickness">1</Thickness>
-    <Thickness x:Key="CheckBoxContentMargin">8,0,0,0</Thickness>
+    <Thickness x:Key="CheckBoxContentMargin">8,5,0,0</Thickness>
     <sys:Double x:Key="CheckBoxIconSize">14</sys:Double>
     <sys:Double x:Key="CheckBoxHeight">22</sys:Double>
     <sys:Double x:Key="CheckBoxWidth">22</sys:Double>
@@ -33,7 +33,7 @@
         <Setter Property="Foreground" Value="{DynamicResource CheckBoxForeground}" />
         <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxBorderBrush}" />
         <Setter Property="BorderThickness" Value="{StaticResource CheckBoxBorderThemeThickness}" />
-        <Setter Property="Padding" Value="{StaticResource CheckBoxPadding}" />
+        <Setter Property="Padding" Value="{StaticResource CheckBoxContentMargin}" />
         <Setter Property="Border.CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Center" />
@@ -60,8 +60,8 @@
                                 x:Name="ControlBorderIconPresenter"
                                 Width="{StaticResource CheckBoxHeight}"
                                 Height="{StaticResource CheckBoxWidth}"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                 Background="{TemplateBinding Background}"
                                 CornerRadius="{TemplateBinding Border.CornerRadius}">
                                 <Border
@@ -87,7 +87,8 @@
                         </BulletDecorator.Bullet>
                         <ContentPresenter
                             x:Name="ContentPresenter"
-                            Margin="{StaticResource CheckBoxContentMargin}"
+                            Margin="{TemplateBinding Padding}"
+                            SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                             RecognizesAccessKey="True" />
